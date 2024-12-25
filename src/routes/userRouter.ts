@@ -1,9 +1,9 @@
 import express from "express"
-import { index_get } from "../controllers/indexController"
+import { register_user } from "../controllers/userController"
 import asyncHandler from "express-async-handler"
 
 const router = express.Router()
 
-router.get("/", asyncHandler(index_get))
+router.post("/user/register", asyncHandler(register_user))
 
 export default router

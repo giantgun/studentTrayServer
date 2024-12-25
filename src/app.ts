@@ -3,6 +3,7 @@ import path from "path"
 import logger from  "morgan"
 import cookieParser from "cookie-parser"
 import indexRouter from "./routes/indexRouter"
+import userRouter from "./routes/userRouter"
 
 const app = express()
 
@@ -15,6 +16,7 @@ app.use(express.json())
 
 //routes
 app.use("/", indexRouter)
+app.use("/user", userRouter)
 
 //error handling
 app.use((req, res, next) => {
