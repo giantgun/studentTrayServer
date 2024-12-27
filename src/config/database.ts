@@ -2,6 +2,7 @@ import { Sequelize } from '@sequelize/core';
 import { MySqlDialect } from '@sequelize/mysql';
 import dotenv from "dotenv";
 import { User } from "../models/user"
+import { Lodge } from '../models/lodges';
 
 dotenv.config()
 
@@ -14,18 +15,18 @@ const sequelize = new Sequelize({
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
     port: port,
-    models: [User],
+    models: [User, Lodge],
   });
 
 export default sequelize
 
-async function testConnection(){
+export async function testDbConnection(){
     try {
         await sequelize.authenticate();
-        console.log('Connection has been established successfully.');
+        console.log('Connection to db has been established successfully.');
       } catch (error) {
         console.error('Unable to connect to the database:', error);
       }
 }
 
-testConnection()
+sequelize.sync()
