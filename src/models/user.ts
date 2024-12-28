@@ -7,7 +7,7 @@ import {
   NonAttribute,
 } from '@sequelize/core'
 import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default, HasMany } from '@sequelize/core/decorators-legacy'
-import { Lodge } from './lodges';
+import { Lodge } from './lodge';
 
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
@@ -16,10 +16,6 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   @PrimaryKey
   @AutoIncrement
   declare userId: CreationOptional<number>;
-
-  
-  @HasMany(() => Lodge, 'lodgeId')
-  declare lodges?: NonAttribute<Lodge[]>;
 
   @Attribute(DataTypes.STRING)
   @NotNull

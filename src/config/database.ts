@@ -2,7 +2,7 @@ import { Sequelize } from '@sequelize/core';
 import { MySqlDialect } from '@sequelize/mysql';
 import dotenv from "dotenv";
 import { User } from "../models/user"
-import { Lodge } from '../models/lodges';
+import { Lodge } from '../models/lodge';
 
 dotenv.config()
 

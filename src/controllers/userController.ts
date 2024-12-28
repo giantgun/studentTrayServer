@@ -27,7 +27,7 @@ export async function signUp_user(req: Request , res: Response): Promise<any>{
           }
         console.log(req.body)
     
-        const existingUserEmail =await User.findOne( { where: { email: email } } as FindOptions<InferAttributes<User, { omit: never; }>>)
+        const existingUserEmail = await User.findOne( { where: { email: email } } as FindOptions<InferAttributes<User, { omit: never; }>>)
         if(existingUserEmail){
             return res.status(400).json("email already in use")
         }

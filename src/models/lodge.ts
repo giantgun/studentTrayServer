@@ -4,8 +4,11 @@ import {
     InferAttributes,
     InferCreationAttributes,
     CreationOptional,
+    NonAttribute,
+    BelongsToSetAssociationMixin,
 } from '@sequelize/core'
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from '@sequelize/core/decorators-legacy'
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from '@sequelize/core/decorators-legacy'
+import { User } from './user';
 
 export class Lodge extends Model<InferAttributes<Lodge>, InferCreationAttributes<Lodge>>{
     @Attribute(DataTypes.INTEGER)
@@ -14,6 +17,21 @@ export class Lodge extends Model<InferAttributes<Lodge>, InferCreationAttributes
     @AutoIncrement
     declare lodgeId: CreationOptional<number>;
 
+    @BelongsTo(() => User, {
+        foreignKey:  'userId',
+        inverse: {
+            as: 'lodges',
+            type: 'hasMany',
+          },
+    })
+    declare UserId?: NonAttribute<User>;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare userId: number;
+
+    declare setUserId: BelongsToSetAssociationMixin<User, User['userId']>
+    
     @Attribute(DataTypes.STRING)
     @NotNull
     declare propertyType: string;
@@ -89,4 +107,8 @@ export class Lodge extends Model<InferAttributes<Lodge>, InferCreationAttributes
     @Attribute(DataTypes.STRING)
     @NotNull
     declare phoneNumber: string;
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare imagesUrlArrayString: string;
 }
