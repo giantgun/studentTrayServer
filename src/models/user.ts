@@ -6,8 +6,8 @@ import {
   CreationOptional,
   NonAttribute,
 } from '@sequelize/core'
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default, HasMany } from '@sequelize/core/decorators-legacy'
-import { Lodge } from './lodge';
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from '@sequelize/core/decorators-legacy'
+
 
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {

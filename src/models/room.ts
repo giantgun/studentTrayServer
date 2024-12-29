@@ -34,7 +34,7 @@ export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<
 
     @Attribute(DataTypes.STRING)
     @NotNull
-    declare imagesArrayString: string
+    declare imagesUrlArrayString: string
 
     @Attribute(DataTypes.STRING)
     @NotNull
@@ -114,7 +114,7 @@ export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<
 
     @Attribute(DataTypes.STRING)
     @NotNull
-    declare OwnerPhone: string
+    declare ownerPhone: string
 
     @Attribute(DataTypes.STRING)
     @NotNull

@@ -1,10 +1,10 @@
 import express from "express"
 import asyncHandler from "express-async-handler"
 import { authorization } from "../config/authorization"
-import { list_room } from "../controllers/roomController"
+import { list_item } from "../controllers/itemController"
 
 const router = express.Router()
 
-router.post("/listRoom", asyncHandler(authorization), asyncHandler(list_room))
+router.post("/listItem", asyncHandler(authorization), asyncHandler(list_item))
 
 export default router

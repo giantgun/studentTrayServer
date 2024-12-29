@@ -5,6 +5,9 @@ import bodyParser from "body-parser"
 import indexRouter from "./routes/indexRouter"
 import userRouter from "./routes/userRouter"
 import lodgeRouter from "./routes/lodgeRouter"
+import roomRouter from "./routes/roomRouter"
+import itemRouter from "./routes/itemRouter"
+import serviceRouter from "./routes/serviceRouter"
 import cors from "cors"
 
 const app = express()
@@ -23,6 +26,9 @@ app.use(cors({
 app.use("/", indexRouter)
 app.use(/\/user*/, userRouter)
 app.use(/\/lodges*/, lodgeRouter)
+app.use(/\/rooms*/, roomRouter)
+app.use(/\/items*/, itemRouter)
+app.use(/\/services*/, serviceRouter)
 
 //error handling
 app.use((req, res, next) => {

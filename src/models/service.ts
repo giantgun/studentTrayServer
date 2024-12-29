@@ -1,0 +1,66 @@
+import {
+    DataTypes,
+    Model,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+    NonAttribute,
+    BelongsToSetAssociationMixin,
+  } from '@sequelize/core'
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo, Default } from '@sequelize/core/decorators-legacy'
+import { User } from './user';
+
+export class Service extends Model<InferAttributes<Service>, InferCreationAttributes<Service>>{
+    @Attribute(DataTypes.INTEGER)
+    @PrimaryKey
+    @AutoIncrement
+    @NotNull
+    declare ServiceId: CreationOptional<number>
+
+    @BelongsTo(() => User, {
+        foreignKey:  'userId',
+        inverse: {
+            as: 'services',
+            type: 'hasMany',
+            },
+    })
+    declare UserId?: NonAttribute<User>;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare userId: number;
+
+    declare setUserId: BelongsToSetAssociationMixin<User, User['userId']>
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare imagesUrlArrayString: string
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare title: number;
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare description: string;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare price: number;
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare category: string;
+
+    @Attribute(DataTypes.STRING)
+    @Default("")
+    declare online: string
+
+    @Attribute(DataTypes.STRING)
+    @Default("")
+    declare inPerson: string
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare jsonStingifiedAvailabilty: string
+}

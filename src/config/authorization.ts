@@ -15,13 +15,11 @@ export const authorization = async  (req: Request, res: Response, next: NextFunc
     const decodedToken = jwt.verify(cookieValue, tokenSecret! )
     const email = JSON.parse(JSON.stringify(decodedToken)).email
 
-    console.log(email)
     const user = await User.findOne({ where: { email: email } } )
 
     if (!user) {
       return res.status(401).json('Invalid token')
     }
-    console.log(user)
     
     req.user = user
     next();

@@ -1,8 +1,11 @@
-import { Sequelize } from '@sequelize/core';
-import { MySqlDialect } from '@sequelize/mysql';
-import dotenv from "dotenv";
+import { Sequelize } from '@sequelize/core'
+import { MySqlDialect } from '@sequelize/mysql'
+import dotenv from "dotenv"
 import { User } from "../models/user"
-import { Lodge } from '../models/lodge';
+import { Lodge } from '../models/lodge'
+import { Room } from '../models/room'
+import { Item } from '../models/item'
+import { Service } from '../models/service'
 
 dotenv.config()
 
@@ -15,7 +18,13 @@ const sequelize = new Sequelize({
     password: process.env.DB_PASSWORD,
     host: process.env.DB_HOST,
     port: port,
-    models: [User, Lodge],
+    models: [
+      User, 
+      Lodge,
+      Room,
+      Item,
+      Service,
+    ],
   });
 
 export default sequelize

@@ -23,11 +23,10 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         networkQuality,
         networkDescription,
         phoneNumber,
-        imagesUrlArr
+        imagesUrlArrayString
       } = req.body
     const userId = req.user.userId
     
-    const imagesUrlArrayString = imagesUrlArr.toString()
     if(
         !propertyType||
         !paymentFrequency ||
@@ -41,36 +40,33 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         !networkQuality || 
         !phoneNumber || phoneNumber >= 9999999999 
     ){
-        return res.status(400).json("Invalid Input")
+        return res.status(400).json("Invalid input.")
     }
 
-
-    const cleanedLodge = {
-        propertyType: propertyType,
-        numberOfBedrooms: numberOfBedrooms,
-        numberOfBathrooms: numberOfBathrooms,
-        paymentFrequency: paymentFrequency,
-        price: price,
-        priceType: priceType,
-        location: location,
-        nearestSchool: nearestSchool,
-        walkingTime: walkingTime,
-        kekeTime: kekeTime,
-        description: description,
-        WiFi: WiFi,
-        parking: parking,
-        electricity: electricity,
-        water: water,
-        electricityDescription: electricityDescription,
-        waterDescription: waterDescription,
-        networkQuality: networkQuality,
-        networkDescription: networkDescription,
-        phoneNumber: phoneNumber,
-        userId: userId,
-        imagesUrlArrayString: imagesUrlArrayString
-      }
-
-    const newLodge = new Lodge({...cleanedLodge})
+    const newLodge = new Lodge({
+      propertyType: propertyType,
+      numberOfBedrooms: numberOfBedrooms,
+      numberOfBathrooms: numberOfBathrooms,
+      paymentFrequency: paymentFrequency,
+      price: price,
+      priceType: priceType,
+      location: location,
+      nearestSchool: nearestSchool,
+      walkingTime: walkingTime,
+      kekeTime: kekeTime,
+      description: description,
+      WiFi: WiFi,
+      parking: parking,
+      electricity: electricity,
+      water: water,
+      electricityDescription: electricityDescription,
+      waterDescription: waterDescription,
+      networkQuality: networkQuality,
+      networkDescription: networkDescription,
+      phoneNumber: phoneNumber,
+      userId: userId,
+      imagesUrlArrayString: imagesUrlArrayString
+    })
     await newLodge.save()
-    return res.status(200).json("The lodge has been listed")
+    return res.status(200).json("The lodge has been listed.")
 }
