@@ -55,4 +55,7 @@ export class Item extends Model<InferAttributes<Item>, InferCreationAttributes<I
     @Attribute(DataTypes.STRING)
     @NotNull
     declare category: string;
+
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
 }

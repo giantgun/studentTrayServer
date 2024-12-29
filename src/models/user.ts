@@ -53,4 +53,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   getFullname() {
     return [this.firstName, this.lastName].join(' ');
   }
+
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
 }

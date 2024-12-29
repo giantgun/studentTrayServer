@@ -79,7 +79,6 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
         secure: false,
         sameSite: 'lax',
       }).json({
-        userId: user.userId,
         username: user.username,
         school: user.school,
         dateOfBirth: user.dateOfBirth,
@@ -89,6 +88,45 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
 
 export async function signOut_user(req: Request, res: Response): Promise<any> {
     return res.clearCookie("access_token").status(200).json("Sign out successful.")
+}
+
+export async function edit_profile(req: Request, res: Response): Promise<any>{
+    const {
+        username,
+        firstName,
+        lastName,
+        dateOfBirth,
+        school
+    } = req.body
+
+    const user = req.user
+    if(
+        !username ||
+        !firstName ||
+        !lastName ||
+        !dateOfBirth ||
+        !school
+    ){
+        return res.status(400).json("Invalid Input.")
+    }
+
+    const editedUser = await User.findOne( { where: { userId: user.userId } } as FindOptions<InferAttributes<User, { omit: never; }>> )
+
+    editedUser!.username = username,
+    editedUser!.firstName = firstName,
+    editedUser!.lastName = lastName,
+    editedUser!.dateOfBirth = dateOfBirth,
+    editedUser!.school = school
+
+    await editedUser!.save()
+
+
+    return res.status(200).json({
+        username: editedUser!.username,
+        school: editedUser!.school,
+        dateOfBirth: editedUser!.dateOfBirth,
+        photoUrl: editedUser!.photoUrl,
+      })
 }
 
 async function generateAccessToken(email: string ){

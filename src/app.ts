@@ -8,6 +8,7 @@ import lodgeRouter from "./routes/lodgeRouter"
 import roomRouter from "./routes/roomRouter"
 import itemRouter from "./routes/itemRouter"
 import serviceRouter from "./routes/serviceRouter"
+import businessRouter from "./routes/businessRouter"
 import cors from "cors"
 
 const app = express()
@@ -29,6 +30,7 @@ app.use(/\/lodges*/, lodgeRouter)
 app.use(/\/rooms*/, roomRouter)
 app.use(/\/items*/, itemRouter)
 app.use(/\/services*/, serviceRouter)
+app.use(/\/business*/, businessRouter)
 
 //error handling
 app.use((req, res, next) => {

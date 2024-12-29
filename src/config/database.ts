@@ -6,6 +6,7 @@ import { Lodge } from '../models/lodge'
 import { Room } from '../models/room'
 import { Item } from '../models/item'
 import { Service } from '../models/service'
+import { Business } from '../models/business'
 
 dotenv.config()
 
@@ -24,6 +25,7 @@ const sequelize = new Sequelize({
       Room,
       Item,
       Service,
+      Business,
     ],
   });
 

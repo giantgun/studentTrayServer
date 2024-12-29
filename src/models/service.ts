@@ -63,4 +63,7 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
     @Attribute(DataTypes.STRING)
     @NotNull
     declare jsonStingifiedAvailabilty: string
+
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
 }

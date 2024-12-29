@@ -111,4 +111,7 @@ export class Lodge extends Model<InferAttributes<Lodge>, InferCreationAttributes
     @Attribute(DataTypes.STRING)
     @NotNull
     declare imagesUrlArrayString: string;
+
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
 }

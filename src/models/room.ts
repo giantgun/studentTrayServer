@@ -130,4 +130,7 @@ export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<
 
     @Attribute(DataTypes.STRING)
     declare additionalInfo: string
+
+    declare createdAt: CreationOptional<Date>;
+    declare updatedAt: CreationOptional<Date>;
 }
