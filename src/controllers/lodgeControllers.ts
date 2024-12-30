@@ -70,3 +70,9 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
     await newLodge.save()
     return res.status(200).json("The lodge has been listed.")
 }
+
+export async function all_lodges(req: Request, res: Response): Promise<any>{
+  const user = req.user
+  const allLodges = await Lodge.findAll({where: { nearestSchool: user.school }})
+  return res.status(200).json(allLodges)
+}

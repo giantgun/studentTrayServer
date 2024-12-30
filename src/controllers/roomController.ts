@@ -88,3 +88,9 @@ export async function list_room(req: Request, res: Response): Promise<any> {
     await newRoom.save()
     return res.status(200).json("The Room has been listed.")
 }
+
+export async function all_rooms(req: Request, res: Response): Promise<any>{
+  const user = req.user
+  const allRooms = await Room.findAll({where: { nearestSchool: user.school }})
+  return res.status(200).json(allRooms)
+}
