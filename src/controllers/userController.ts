@@ -1,10 +1,11 @@
 import { FindOptions, InferAttributes } from "@sequelize/core"
 import {User} from "../models/user"
 import argon2 from "argon2"
-import { NextFunction, Response, Request } from "express"
+import { Response, Request } from "express"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import { testDbConnection } from "../config/database"
+import { Business } from "../models/business"
 
 testDbConnection()
 dotenv.config()
@@ -73,17 +74,47 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
         return res.status(400).json("Invalid Username or Password.")
     }
 
+    const business = await Business.findOne({ where: { userId: user.userId }  })
+
     const token = await generateAccessToken(email)
+    if(business){
+        return res.status(200).cookie('access_token', token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'lax',
+        }).json({
+            user: {
+                username: user.username,
+                school: user.school,
+                dateOfBirth: user.dateOfBirth,
+                photoUrl: user.photoUrl,
+            },
+            business: {
+                businessName: business.businessName,
+                address: business.address,
+                businessEmail: business.businessEmail,
+                phoneNumber: business.phoneNumber,
+                nearestSchool: business.nearestSchool,
+                description: business.description,
+                dateJoined: business.createdAt
+            }
+        })
+    }
+
     return res.status(200).cookie('access_token', token, {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-      }).json({
-        username: user.username,
-        school: user.school,
-        dateOfBirth: user.dateOfBirth,
-        photoUrl: user.photoUrl,
-      })
+    }).json({
+        user: {
+            username: user.username,
+            school: user.school,
+            dateOfBirth: user.dateOfBirth,
+            photoUrl: user.photoUrl,
+        },
+    })
+
+    
 }
 
 export async function signOut_user(req: Request, res: Response): Promise<any> {
