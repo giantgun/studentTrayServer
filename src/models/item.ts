@@ -32,7 +32,7 @@ export class Item extends Model<InferAttributes<Item>, InferCreationAttributes<I
 
     declare setUserId: BelongsToSetAssociationMixin<User, User['userId']>
 
-    @Attribute(DataTypes.STRING)
+    @Attribute(DataTypes.TEXT('long'))
     @NotNull
     declare imagesUrlArrayString: string
 
@@ -55,6 +55,14 @@ export class Item extends Model<InferAttributes<Item>, InferCreationAttributes<I
     @Attribute(DataTypes.STRING)
     @NotNull
     declare category: string;
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare school: string;
+    
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare numberInStock: number;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

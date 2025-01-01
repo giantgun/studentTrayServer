@@ -1,6 +1,6 @@
 import express from "express"
 import asyncHandler from "express-async-handler"
-import { authorization } from "../config/authorization"
+import { authorization } from "../utils/authorization"
 import { edit_business, register_business } from "../controllers/businessController"
 
 const router =  express.Router()

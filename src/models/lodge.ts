@@ -108,9 +108,13 @@ export class Lodge extends Model<InferAttributes<Lodge>, InferCreationAttributes
     @NotNull
     declare phoneNumber: string;
 
-    @Attribute(DataTypes.STRING)
+    @Attribute(DataTypes.TEXT('long'))
     @NotNull
     declare imagesUrlArrayString: string;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare numberAvailable: number;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

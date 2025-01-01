@@ -32,7 +32,7 @@ export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<
 
     declare setUserId: BelongsToSetAssociationMixin<User, User['userId']>
 
-    @Attribute(DataTypes.STRING)
+    @Attribute(DataTypes.TEXT('long'))
     @NotNull
     declare imagesUrlArrayString: string
 

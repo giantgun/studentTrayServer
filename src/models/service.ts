@@ -32,7 +32,7 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
 
     declare setUserId: BelongsToSetAssociationMixin<User, User['userId']>
 
-    @Attribute(DataTypes.STRING)
+    @Attribute(DataTypes.TEXT('long'))
     @NotNull
     declare imagesUrlArrayString: string
 
@@ -63,6 +63,10 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
     @Attribute(DataTypes.STRING)
     @NotNull
     declare jsonStingifiedAvailabilty: string
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare school: string;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

@@ -23,13 +23,15 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         networkQuality,
         networkDescription,
         phoneNumber,
-        imagesUrlArrayString
+        imagesUrlArrayString,
+        numberOfLodges
       } = req.body
     const userId = req.user.userId
     
     if(
         !propertyType||
         !paymentFrequency ||
+        !numberOfLodges ||
         !price ||
         !priceType ||
         !location ||
@@ -38,7 +40,8 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         !kekeTime ||
         !description || 
         !networkQuality || 
-        !phoneNumber || phoneNumber >= 9999999999 
+        !phoneNumber || phoneNumber >= 9999999999 ||
+        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
     ){
         return res.status(400).json("Invalid input.")
     }
@@ -65,14 +68,23 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
       networkDescription: networkDescription,
       phoneNumber: phoneNumber,
       userId: userId,
+      numberAvailable: numberOfLodges,
       imagesUrlArrayString: imagesUrlArrayString
     })
     await newLodge.save()
     return res.status(200).json("The lodge has been listed.")
 }
 
-export async function all_lodges(req: Request, res: Response): Promise<any>{
+export async function get_all_lodges(req: Request, res: Response): Promise<any>{
   const user = req.user
   const allLodges = await Lodge.findAll({where: { nearestSchool: user.school }})
   return res.status(200).json(allLodges)
+}
+
+export async function get_a_lodge(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const lodgeId = req.params.lodgeId
+
+    const lodge= await Lodge.findOne({where: { nearestSchool: user.school, lodgeId: lodgeId }})
+    return res.status(200).json(lodge)
 }

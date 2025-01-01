@@ -48,7 +48,7 @@ export async function list_room(req: Request, res: Response): Promise<any> {
         !yearOfStudy ||
         !dateOfBirth ||
         !additionalInfo ||
-        !imagesUrlArrayString
+        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
     ){
         return res.status(400).json("Invalid input.")
     }
@@ -89,8 +89,16 @@ export async function list_room(req: Request, res: Response): Promise<any> {
     return res.status(200).json("The Room has been listed.")
 }
 
-export async function all_rooms(req: Request, res: Response): Promise<any>{
+export async function get_all_rooms(req: Request, res: Response): Promise<any>{
   const user = req.user
   const allRooms = await Room.findAll({where: { nearestSchool: user.school }})
   return res.status(200).json(allRooms)
+}
+
+export async function get_a_room(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const roomId = req.params.roomId
+
+    const room= await Room.findOne({where: { nearestSchool: user.school, RoomId: roomId }})
+    return res.status(200).json(room)
 }

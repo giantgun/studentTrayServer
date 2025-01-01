@@ -9,6 +9,7 @@ import roomRouter from "./routes/roomRouter"
 import itemRouter from "./routes/itemRouter"
 import serviceRouter from "./routes/serviceRouter"
 import businessRouter from "./routes/businessRouter"
+import cloudinaryRouter from "./routes/cloudinaryRouter"
 import cors from "cors"
 
 const app = express()
@@ -25,6 +26,7 @@ app.use(cors({
 
 //routes
 app.use("/", indexRouter)
+app.use(/\/cloudinary*/, cloudinaryRouter)
 app.use(/\/user*/, userRouter)
 app.use(/\/lodges*/, lodgeRouter)
 app.use(/\/rooms*/, roomRouter)

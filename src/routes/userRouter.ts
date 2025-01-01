@@ -3,7 +3,7 @@ import { signUp_user, signIn_user, signOut_user, edit_profile } from "../control
 import asyncHandler from "express-async-handler"
 import dotenv from "dotenv"
 import { index_get } from "../controllers/indexController"
-import { authorization } from "../config/authorization"
+import { authorization } from "../utils/authorization"
 
 dotenv.config()
 

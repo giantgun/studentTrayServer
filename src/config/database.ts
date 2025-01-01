@@ -40,4 +40,6 @@ export async function testDbConnection(){
       }
 }
 
+// sequelize.sync({force: true})
+
 sequelize.sync()
