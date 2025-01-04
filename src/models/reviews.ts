@@ -43,7 +43,6 @@ export class Review extends Model<InferAttributes<Review>, InferCreationAttribut
     declare BusinessId?: NonAttribute<Business>;
 
     @Attribute(DataTypes.INTEGER)
-    @Default(null)
     declare businessId:  CreationOptional<number>
 
     declare setBusinessId: BelongsToSetAssociationMixin<Business, Business['businessId']>

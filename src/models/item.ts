@@ -36,9 +36,9 @@ export class Item extends Model<InferAttributes<Item>, InferCreationAttributes<I
     @NotNull
     declare imagesUrlArrayString: string
 
-    @Attribute(DataTypes.INTEGER)
+    @Attribute(DataTypes.STRING)
     @NotNull
-    declare title: number;
+    declare title: string;
 
     @Attribute(DataTypes.STRING)
     @NotNull

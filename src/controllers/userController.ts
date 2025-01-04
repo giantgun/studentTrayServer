@@ -23,7 +23,7 @@ export async function signUp_user(req: Request , res: Response): Promise<any>{
             phoneNumber,
             school
         } = req.body
-        if (!username || !email || !password || !dateOfBirth || !school) {
+        if (!username || !email || !password || !dateOfBirth || !school || !phoneNumber) {
             return res.status(400).json('Invalid input.');
           }
         console.log(req.body)
@@ -46,7 +46,7 @@ export async function signUp_user(req: Request , res: Response): Promise<any>{
             password: hashedPassword,
             dateOfBirth: dateOfBirth,
             school: school,
-            phoneNumber: phoneNumber
+            phoneNumber: phoneNumber.toString()
         })
         newUser.save() 
         return res.status(200).json("Sign up successful.")
@@ -57,13 +57,13 @@ export async function signUp_user(req: Request , res: Response): Promise<any>{
 }
 
 export async function signIn_user(req: Request, res: Response): Promise<any> {
-    const { email, password } = req.body
+    const { username, password } = req.body
 
-    if ( !email || !password ) {
+    if ( !username || !password ) {
         return res.status(400).json( 'Invalid input.' );
       }
     
-    const user = await User.findOne( { where: { email: email } } as FindOptions<InferAttributes<User, { omit: never; }>> )
+    const user = await User.findOne( { where: { username: username } } as FindOptions<InferAttributes<User, { omit: never; }>> )
     if(!user){
         return res.status(400).json("Invalid Username or Password.")
     }
@@ -75,7 +75,7 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
 
     const business = await Business.findOne({ where: { userId: user.userId }  })
 
-    const token = await generateAccessToken(email)
+    const token = await generateAccessToken(user.email)
     if(business){
         return res.status(200).cookie('access_token', token, {
             httpOnly: true,

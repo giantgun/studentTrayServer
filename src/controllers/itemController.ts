@@ -27,7 +27,7 @@ export async function list_item(req: Request, res: Response): Promise<any>{
         return res.status(400).json("Invalid Input.")
     }
 
-    for (let i = 0; i < schoolArray.length - 1; i++) {
+    for (let i = 0; i < schoolArray.length; i++) {
         const newItem = new Item({
             imagesUrlArrayString,
             title,

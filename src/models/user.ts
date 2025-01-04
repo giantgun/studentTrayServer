@@ -21,10 +21,6 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   @NotNull
   declare username: string;
 
-  @Attribute(DataTypes.TEXT("long"))
-  @AllowNull
-  declare bookmarks: string;
-
   @Attribute(DataTypes.STRING)
   @NotNull
   declare email: string;
