@@ -9,18 +9,19 @@ import {
   } from '@sequelize/core'
 import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo, Default } from '@sequelize/core/decorators-legacy'
 import { User } from './user';
+import { Business } from './business';
 
-export class Service extends Model<InferAttributes<Service>, InferCreationAttributes<Service>>{
+export class Review extends Model<InferAttributes<Review>, InferCreationAttributes<Review>>{
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement
     @NotNull
-    declare ServiceId: CreationOptional<number>
+    declare reviewId: CreationOptional<number>
 
     @BelongsTo(() => User, {
         foreignKey:  'userId',
         inverse: {
-            as: 'services',
+            as: 'reviews',
             type: 'hasMany',
             },
     })
@@ -28,45 +29,32 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
-    declare userId: number;
+    declare userId: CreationOptional<number>;
 
     declare setUserId: BelongsToSetAssociationMixin<User, User['userId']>
 
-    @Attribute(DataTypes.TEXT('long'))
-    @NotNull
-    declare imagesUrlArrayString: string
+    @BelongsTo(() => Business, {
+        foreignKey:  'businessId',
+        inverse: {
+            as: 'reviews',
+            type: 'hasMany',
+            },
+    })
+    declare BusinessId?: NonAttribute<Business>;
 
-    @Attribute(DataTypes.STRING)
-    @NotNull
-    declare title: string;
+    @Attribute(DataTypes.INTEGER)
+    @Default(null)
+    declare businessId:  CreationOptional<number>
 
-    @Attribute(DataTypes.STRING)
-    @NotNull
-    declare description: string;
+    declare setBusinessId: BelongsToSetAssociationMixin<Business, Business['businessId']>
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
-    declare price: number;
+    declare numberOfStars: number
 
-    @Attribute(DataTypes.STRING)
+    @Attribute(DataTypes.TEXT('long'))
     @NotNull
-    declare category: string;
-
-    @Attribute(DataTypes.STRING)
-    @Default("")
-    declare online: string
-
-    @Attribute(DataTypes.STRING)
-    @Default("")
-    declare inPerson: string
-
-    @Attribute(DataTypes.STRING)
-    @NotNull
-    declare jsonStingifiedAvailabilty: string
-
-    @Attribute(DataTypes.STRING)
-    @NotNull
-    declare school: string;
+    declare description: string
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

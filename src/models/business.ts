@@ -35,6 +35,18 @@ export class Business extends Model<InferAttributes<Business>, InferCreationAttr
 
     @Attribute(DataTypes.STRING)
     @NotNull
+    declare firstName: string;
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare lastName: string ;
+
+    getFullname() {
+        return [this.firstName, this.lastName].join(' ');
+    }
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
     declare businessName: string;
 
     @Attribute(DataTypes.STRING)

@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"
 import { Request, Response, NextFunction } from "express"
 import { User } from "../models/user"
 
-export const authorization = async  (req: Request, res: Response, next: NextFunction): Promise<any> => {
+export const giveAuthorization = async  (req: Request, res: Response, next: NextFunction): Promise<any> => {
     const cookieName = 'access_token';
     const cookieValue = await req.cookies[cookieName]
     const tokenSecret = process.env.TOKEN_SECRET
@@ -20,6 +20,5 @@ export const authorization = async  (req: Request, res: Response, next: NextFunc
       return res.status(401).json('Invalid token')
     }
     
-    req.user = user
-    next();
+    return res.status(200).json("authorized")
   };

@@ -63,3 +63,132 @@ export async function get_a_service(req: Request, res: Response): Promise<any>{
     const service= await Service.findOne({where: { school: user.school, ServiceId: serviceId }})
     return res.status(200).json(service)
 }
+
+export async function delete_service(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const serviceId = req.params.serviceId
+
+    await Service.destroy({where: { userId: user.userId, ServiceId: serviceId }})
+    return res.status(200).json("The service has been deleted successfully.")
+}
+
+export async function edit_service(req: Request, res: Response): Promise<any>{
+    const {
+        title,
+        description,
+        price,
+        category,
+        online,
+        inPerson,
+        availability,
+        imagesUrlArrayString,
+        schoolArray
+    } = req.body
+    const userId = req.user.userId
+    const serviceId = req.params.serviceId
+
+    if(
+        schoolArray.length < 1 ||
+        !title ||
+        !description ||
+        !price || price <= 0 ||
+        !category ||
+        (!online && !inPerson) ||
+        !availability ||
+        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
+    ){
+        return res.status(400).json("Invalid input.")
+    }
+    const jsonStingifiedAvailabilty = JSON.stringify(availability)
+
+    const oldService = await Service.findOne({where:{
+        ServiceId: serviceId
+    }})
+
+    if(!oldService){
+        return res.status(400).json("invalid input.")
+    }
+
+    const services = await Service.findAll({where: {
+        title: oldService?.title,
+        description: oldService?.description,
+        price: oldService?.price,
+        category: oldService?.category,
+        online: oldService?.online,
+        inPerson: oldService?.inPerson,
+        jsonStingifiedAvailabilty: oldService?.jsonStingifiedAvailabilty,
+        imagesUrlArrayString: oldService?.imagesUrlArrayString,
+        userId
+    }})
+    
+    if (services.length < schoolArray.length){
+        for (let i = 0; i < services.length ; i++) {
+        
+            services[i]!.title = title
+            services[i]!.description = description
+            services[i]!.price = price
+            services[i]!.category = category
+            services[i]!.online = online
+            services[i]!.online = online
+            services[i]!.inPerson = inPerson
+            services[i]!.jsonStingifiedAvailabilty = jsonStingifiedAvailabilty
+            services[i]!.imagesUrlArrayString = imagesUrlArrayString
+            services[i]!.school = schoolArray[i]
+    
+            await services[i]!.save()
+        }
+        for (let i = 0; i < schoolArray.slice(services.length).length ; i++) {
+            const newService = new Service({
+                title: title,
+                description: description,
+                price: price,
+                category: category,
+                online: online,
+                inPerson: inPerson,
+                jsonStingifiedAvailabilty: jsonStingifiedAvailabilty,
+                imagesUrlArrayString: imagesUrlArrayString,
+                userId: userId,
+                school: schoolArray[i]
+            })
+            
+            await newService.save()
+        }
+    }else if(services.length === schoolArray.length){
+        for (let i = 0; i < services.length ; i++) {
+        
+            services[i]!.title = title
+            services[i]!.description = description
+            services[i]!.price = price
+            services[i]!.category = category
+            services[i]!.online = online
+            services[i]!.online = online
+            services[i]!.inPerson = inPerson
+            services[i]!.jsonStingifiedAvailabilty = jsonStingifiedAvailabilty
+            services[i]!.imagesUrlArrayString = imagesUrlArrayString
+            services[i]!.school = schoolArray[i]
+    
+            await services[i]!.save()
+        }
+    }else if(services.length > schoolArray.length){
+        for (let i = 0; i < schoolArray.length ; i++) {
+        
+            services[i]!.title = title
+            services[i]!.description = description
+            services[i]!.price = price
+            services[i]!.category = category
+            services[i]!.online = online
+            services[i]!.online = online
+            services[i]!.inPerson = inPerson
+            services[i]!.jsonStingifiedAvailabilty = jsonStingifiedAvailabilty
+            services[i]!.imagesUrlArrayString = imagesUrlArrayString
+            services[i]!.school = schoolArray[i]
+    
+            await services[i]!.save()
+        }
+        for (let i = 0; i < services.slice(schoolArray.length).length ; i++){
+            services[i].destroy()
+        }
+    }
+
+    return res.status(200).json("Service edited successfully.")
+}

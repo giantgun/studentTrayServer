@@ -102,3 +102,104 @@ export async function get_a_room(req: Request, res: Response): Promise<any>{
     const room= await Room.findOne({where: { nearestSchool: user.school, RoomId: roomId }})
     return res.status(200).json(room)
 }
+
+export async function delete_room(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const roomId = req.params.roomId
+
+    await Room.destroy({where: { userId: user.userId, RoomId: roomId }})
+
+    return res.status(200).json("The room has been deleted successfully.")
+}
+
+export async function edit_room(req: Request, res: Response): Promise<any> {
+    const {
+        imagesUrlArrayString,
+        propertyType,
+        numberOfBedrooms,
+        numberOfBathrooms,
+        paymentFrequency,
+        price,
+        priceType,
+        location,
+        school,
+        walkingTime,
+        kekeTime,
+        description,
+        WiFi,
+        parking,
+        electricity,
+        water,
+        electricityDescription,
+        waterDescription,
+        networkQuality,
+        networkDescription,
+        ownerName,
+        ownerPhone,
+        ownerProgramme,
+        yearOfStudy,
+        dateOfBirth,
+        additionalInfo
+    } = req.body
+    
+    if(
+        !propertyType||
+        !paymentFrequency ||
+        !price ||
+        !priceType ||
+        !location ||
+        !school ||
+        !walkingTime ||
+        !kekeTime ||
+        !description || 
+        !networkQuality ||
+        !ownerName ||
+        !ownerPhone ||
+        !ownerProgramme ||
+        !yearOfStudy ||
+        !dateOfBirth ||
+        !additionalInfo ||
+        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
+    ){
+        return res.status(400).json("Invalid input.")
+    }
+
+    const user = req.user
+    const roomId = req.params.roomId
+
+    const room = await Room.findOne({where: { userId: user.userId, RoomId: roomId }})
+
+    if(!room){
+        return res.status(400).json("invalid input.")
+    }
+
+    room!.imagesUrlArrayString = imagesUrlArrayString
+    room!.propertyType = propertyType
+    room!.numberOfBedrooms = numberOfBedrooms
+    room!.numberOfBathrooms = numberOfBathrooms
+    room!.paymentFrequency = paymentFrequency
+    room!.price = price
+    room!.priceType = priceType
+    room!.location = location
+    room!.nearestSchool = school
+    room!.walkingTime = walkingTime
+    room!.kekeTime = kekeTime
+    room!.description = description
+    room!.WiFi = WiFi
+    room!.parking = parking
+    room!.electricity = electricity
+    room!.water = water
+    room!.electricityDescription = electricityDescription
+    room!.waterDescription = waterDescription
+    room!.networkQuality = networkQuality
+    room!.networkDescription = networkDescription
+    room!.ownerName = ownerName
+    room!.ownerPhone = ownerPhone
+    room!.ownerProgramme = ownerProgramme
+    room!.yearOfStudy = yearOfStudy
+    room!.dateOfBirth = dateOfBirth
+    room!.additionalInfo = additionalInfo
+
+    await room!.save()
+    return res.status(200).json("The Room has been listed.")
+}

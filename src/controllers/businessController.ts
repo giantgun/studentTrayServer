@@ -1,6 +1,12 @@
 import { Request, Response } from "express";
 import { Business } from "../models/business";
 import { FindOptions, InferAttributes } from "@sequelize/core";
+import { Review } from "../models/reviews";
+import { User } from "../models/user";
+import { Item } from "../models/item";
+import { Service } from "../models/service";
+import { Lodge } from "../models/lodge";
+import { Room } from "../models/room";
 
 export async function register_business(req: Request, res: Response): Promise<any>{
     const {
@@ -9,7 +15,9 @@ export async function register_business(req: Request, res: Response): Promise<an
         businessEmail,
         phoneNumber,
         nearestSchool,
-        description
+        description,
+        firstName,
+        lastName
     } = req.body
     const userId = req.user.userId
     const user = req.user
@@ -20,7 +28,9 @@ export async function register_business(req: Request, res: Response): Promise<an
         !businessEmail ||
         !phoneNumber ||
         !nearestSchool ||
-        !description 
+        !description ||
+        !firstName ||
+        !lastName
     ){
         return res.status(400).json("Invalid input.")
     }
@@ -32,7 +42,9 @@ export async function register_business(req: Request, res: Response): Promise<an
         phoneNumber: phoneNumber,
         nearestSchool: nearestSchool,
         description: description,
-        userId: userId
+        userId: userId,
+        firstName: firstName,
+        lastName: lastName
     })
     await newBusiness.save()
 
@@ -89,6 +101,8 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
     business!.nearestSchool = nearestSchool
     business!.description = description
 
+    await business?.save()
+
     return res.status(200).json({
         user: {
             username: user.username,
@@ -106,4 +120,30 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
             dateJoined: business!.createdAt
         }
     })
+}
+
+export async function get__business_public(req: Request, res: Response): Promise<any> {
+    const businessId = req.params.businessId
+    const reviews = await Review.findAll({where: { businessId: businessId }})
+    const business = await Business.findOne({where: { businessId: businessId }})
+    const user = await User.findOne({where: { userId: business?.userId}})
+    const items = await Item.findAll({where: { userId: user?.userId }})
+    const services = await Service.findAll({where: { userId: user?.userId }})
+    const lodges = await Lodge.findAll({where: { userId: user?.userId }})
+    const rooms = await Room.findAll({where: { userId: user?.userId }})
+    
+    return res.json({
+        username: user?.username,
+        school: user?.school,
+        photoUrl: user?.photoUrl,
+        bussinessId: business?.businessId,
+        phoneNumber: business?.phoneNumber,
+        reviews: reviews,
+        items: items,
+        services: services,
+        lodges: lodges,
+        rooms: rooms
+    })
+
+
 }

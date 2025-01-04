@@ -6,7 +6,7 @@ import {
   CreationOptional,
   NonAttribute,
 } from '@sequelize/core'
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from '@sequelize/core/decorators-legacy'
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default, AllowNull } from '@sequelize/core/decorators-legacy'
 
 
 
@@ -21,13 +21,9 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   @NotNull
   declare username: string;
 
-  @Attribute(DataTypes.STRING)
-  @NotNull
-  declare firstName: string;
-
-  @Attribute(DataTypes.STRING)
-  @NotNull
-  declare lastName: string ;
+  @Attribute(DataTypes.TEXT("long"))
+  @AllowNull
+  declare bookmarks: string;
 
   @Attribute(DataTypes.STRING)
   @NotNull
@@ -49,10 +45,9 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   @Default('John')
   declare photoUrl: CreationOptional<string>;
 
-
-  getFullname() {
-    return [this.firstName, this.lastName].join(' ');
-  }
+  @Attribute(DataTypes.STRING)
+  @NotNull
+  declare phoneNumber: string;
 
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;

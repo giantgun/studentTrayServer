@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import { testDbConnection } from "../config/database"
 import { Business } from "../models/business"
+import { Review } from "../models/reviews"
 
 testDbConnection()
 dotenv.config()
@@ -16,14 +17,13 @@ export async function signUp_user(req: Request , res: Response): Promise<any>{
     try{
         const {
             username,
-            firstName,
-            lastName,
             email,
             password,
             dateOfBirth,
+            phoneNumber,
             school
         } = req.body
-        if (!username || !firstName || !lastName || !email || !password || !dateOfBirth || !school) {
+        if (!username || !email || !password || !dateOfBirth || !school) {
             return res.status(400).json('Invalid input.');
           }
         console.log(req.body)
@@ -42,12 +42,11 @@ export async function signUp_user(req: Request , res: Response): Promise<any>{
 
         const newUser = new User({
             username: username,
-            firstName: firstName,
-            lastName: lastName,
             email: email,
             password: hashedPassword,
             dateOfBirth: dateOfBirth,
-            school: school
+            school: school,
+            phoneNumber: phoneNumber
         })
         newUser.save() 
         return res.status(200).json("Sign up successful.")
@@ -144,8 +143,6 @@ export async function edit_profile(req: Request, res: Response): Promise<any>{
     const editedUser = await User.findOne( { where: { userId: user.userId } } as FindOptions<InferAttributes<User, { omit: never; }>> )
 
     editedUser!.username = username,
-    editedUser!.firstName = firstName,
-    editedUser!.lastName = lastName,
     editedUser!.dateOfBirth = dateOfBirth,
     editedUser!.school = school
 
@@ -158,6 +155,23 @@ export async function edit_profile(req: Request, res: Response): Promise<any>{
         dateOfBirth: editedUser!.dateOfBirth,
         photoUrl: editedUser!.photoUrl,
       })
+}
+
+export async function get_user_public(req: Request, res: Response): Promise<any> {
+    const userId = req.params.userId
+    const reviews = await Review.findAll({where: { userId: userId }})
+    const user = await User.findOne({where: { userId: userId }})
+    const business = await Business.findOne({where: { userId: userId }})
+    
+    return res.json({
+        username: user?.username,
+        school: user?.school,
+        photoUrl: user?.photoUrl,
+        bussinessId: business?.businessId,
+        reviews: reviews
+    })
+
+
 }
 
 async function generateAccessToken(email: string ){
