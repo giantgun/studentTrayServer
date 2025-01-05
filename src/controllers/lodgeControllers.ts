@@ -1,5 +1,7 @@
 import { Request, Response, } from "express";
 import { Lodge } from "../models/lodge";
+import { Business } from "../models/business";
+import { User } from "../models/user";
 
 export async function list_lodge(req: Request, res: Response): Promise<any>{
     const {
@@ -89,7 +91,19 @@ export async function get_a_lodge(req: Request, res: Response): Promise<any>{
     const lodgeId = req.params.lodgeId
 
     const lodge= await Lodge.findOne({where: { nearestSchool: user.school, lodgeId: lodgeId }})
-    return res.status(200).json(lodge)
+    const business = await Business.findOne({where: { userId: lodge?.userId }})
+        if(business){
+            return res.status(200).json({
+                ...lodge?.dataValues,
+                phoneNumber: business.phoneNumber
+            })
+        }
+        const owner = await User.findOne({ where: {userId: lodge?.userId} })
+    
+        return res.status(200).json({
+            ...lodge?.dataValues,
+            phoneNumber: owner?.phoneNumber
+        })
 }
 
 export async function delete_lodge(req: Request, res: Response): Promise<any>{

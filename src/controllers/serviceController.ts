@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { Service } from "../models/service";
+import { Business } from "../models/business";
+import { User } from "../models/user";
 
 export async function list_service(req: Request, res: Response): Promise<any>{
     const {
@@ -61,7 +63,19 @@ export async function get_a_service(req: Request, res: Response): Promise<any>{
     const serviceId = req.params.serviceId
 
     const service= await Service.findOne({where: { school: user.school, ServiceId: serviceId }})
-    return res.status(200).json(service)
+    const business = await Business.findOne({where: { userId: service?.userId }})
+        if(business){
+            return res.status(200).json({
+                ...service?.dataValues,
+                phoneNumber: business.phoneNumber
+            })
+        }
+        const owner = await User.findOne({ where: {userId: service?.userId} })
+    
+        return res.status(200).json({
+            ...service?.dataValues,
+            phoneNumber: owner?.phoneNumber
+        })
 }
 
 export async function delete_service(req: Request, res: Response): Promise<any>{

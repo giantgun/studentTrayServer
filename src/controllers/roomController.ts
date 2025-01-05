@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Room } from "../models/room";
+import { Business } from "../models/business";
+import { User } from "../models/user";
 
 export async function list_room(req: Request, res: Response): Promise<any> {
     const {
@@ -100,7 +102,18 @@ export async function get_a_room(req: Request, res: Response): Promise<any>{
     const roomId = req.params.roomId
 
     const room= await Room.findOne({where: { nearestSchool: user.school, RoomId: roomId }})
-    return res.status(200).json(room)
+    const business = await Business.findOne({where: { userId: room?.userId }})
+    if(business){
+        return res.status(200).json({
+            ...room?.dataValues,
+        })
+    }
+    const owner = await User.findOne({ where: {userId: room?.userId} })
+
+    return res.status(200).json({
+        ...room?.dataValues,
+        phoneNumber: owner?.phoneNumber
+    })
 }
 
 export async function delete_room(req: Request, res: Response): Promise<any>{

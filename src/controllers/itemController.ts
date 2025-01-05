@@ -1,5 +1,7 @@
 import { Request, Response } from "express"
 import { Item } from "../models/item"
+import { Business } from "../models/business"
+import { User } from "../models/user"
 
 export async function list_item(req: Request, res: Response): Promise<any>{
     const {
@@ -55,8 +57,20 @@ export async function get_an_item(req: Request, res: Response): Promise<any>{
     const user = req.user
     const itemId = req.params.itemId
 
-    const item= await Item.findOne({where: { school: user.school, itemId: itemId }})
-    return res.status(200).json(item)
+    const item = await Item.findOne({where: { school: user.school, itemId: itemId }})
+    const business = await Business.findOne({where: { userId: item?.userId }})
+    if(business){
+        return res.status(200).json({
+            ...item?.dataValues,
+            phoneNumber: business.phoneNumber
+        })
+    }
+    const owner = await User.findOne({ where: {userId: item?.userId} })
+
+    return res.status(200).json({
+        ...item?.dataValues,
+        phoneNumber: owner?.phoneNumber
+    })
 }
 
 export async function delete_item(req: Request, res: Response): Promise<any>{
