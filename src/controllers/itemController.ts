@@ -2,6 +2,7 @@ import { Request, Response } from "express"
 import { Item } from "../models/item"
 import { Business } from "../models/business"
 import { User } from "../models/user"
+import { Op } from "@sequelize/core"
 
 export async function list_item(req: Request, res: Response): Promise<any>{
     const {
@@ -48,6 +49,16 @@ export async function list_item(req: Request, res: Response): Promise<any>{
 
 export async function get_all_items(req: Request, res: Response): Promise<any>{
   const user = req.user
+  const searchedText = req.query.search
+    if(searchedText){
+      const items = await Item.findAll({
+          where: {
+          title: { [Op.like]: `%${searchedText}%` },
+          school: user.school
+        },
+      })
+      return res.status(200).json(items)
+    }
 
   const allItems = await Item.findAll({where: { school: user.school }})
   return res.status(200).json(allItems)

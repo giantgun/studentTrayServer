@@ -2,8 +2,7 @@ import { Request, Response } from "express";
 import { Service } from "../models/service";
 import { Business } from "../models/business";
 import { User } from "../models/user";
-import { sql } from '@sequelize/core';
-import sequelize from "../config/database";
+import { Op } from '@sequelize/core';
 
 export async function list_service(req: Request, res: Response): Promise<any>{
     const {
@@ -58,6 +57,18 @@ export async function list_service(req: Request, res: Response): Promise<any>{
 
 export async function get_all_services(req: Request, res: Response): Promise<any>{
   const user = req.user
+  const searchedText = req.query.search
+  if(searchedText){
+    console.log(searchedText)
+    const services = await Service.findAll({
+        where: {
+          title: { [Op.like]: `%${searchedText}%` },
+          school: user.school
+        },
+    })
+    return res.status(200).json(services)
+    }
+
 
   const allServices= await Service.findAll({where: { school: user.school }})
   return res.status(200).json(allServices)
@@ -214,11 +225,4 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
     }
 
     return res.status(200).json("Service edited successfully.")
-}
-
-export async function search_services(req: Request, res: Response): Promise<any>{
-    const searchedText = req.params.searchedText
-    const services = await sequelize.query(sql`SELECT * FROM Customers WHERE CustomerName LIKE ${searchedText}`)
-
-    return res.json(services)
 }

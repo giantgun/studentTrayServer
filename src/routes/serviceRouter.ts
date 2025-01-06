@@ -1,13 +1,17 @@
 import express from "express"
 import asyncHandler from "express-async-handler"
 import { authorization } from "../utils/authorization"
-import { delete_service, edit_service, get_a_service, get_all_services, list_service, search_services } from "../controllers/serviceController"
+import { 
+    delete_service, 
+    edit_service, 
+    get_a_service, 
+    get_all_services, 
+    list_service, 
+} from "../controllers/serviceController"
 
 const router = express.Router()
 
 router.get("/", asyncHandler(authorization), asyncHandler(get_all_services))
-
-router.get("/?search=:searchedText", asyncHandler(authorization), asyncHandler(search_services))
 
 router.get("/:serviceId", asyncHandler(authorization), asyncHandler(get_a_service))
 

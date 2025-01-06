@@ -2,6 +2,7 @@ import { Request, Response, } from "express";
 import { Lodge } from "../models/lodge";
 import { Business } from "../models/business";
 import { User } from "../models/user";
+import { Op } from "@sequelize/core";
 
 export async function list_lodge(req: Request, res: Response): Promise<any>{
     const {
@@ -82,6 +83,16 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
 
 export async function get_all_lodges(req: Request, res: Response): Promise<any>{
   const user = req.user
+  const searchedText = req.query.search
+    if(searchedText){
+      const lodges = await Lodge.findAll({
+          where: {
+          propertyType: { [Op.like]: `%${searchedText}%` },
+          nearestSchool: user.school
+        },
+      })
+      return res.status(200).json(lodges)
+    }
   const allLodges = await Lodge.findAll({where: { nearestSchool: user.school }})
   return res.status(200).json(allLodges)
 }
