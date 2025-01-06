@@ -68,6 +68,10 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
     @NotNull
     declare school: string;
 
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare priceType: string;
+
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
 }

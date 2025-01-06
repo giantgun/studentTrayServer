@@ -2,12 +2,15 @@ import { Request, Response } from "express";
 import { Service } from "../models/service";
 import { Business } from "../models/business";
 import { User } from "../models/user";
+import { sql } from '@sequelize/core';
+import sequelize from "../config/database";
 
 export async function list_service(req: Request, res: Response): Promise<any>{
     const {
         title,
         description,
         price,
+        priceType,
         category,
         online,
         inPerson,
@@ -20,6 +23,7 @@ export async function list_service(req: Request, res: Response): Promise<any>{
     if(
         schoolArray.length < 1 ||
         !title ||
+        !priceType ||
         !description ||
         !price || price <= 0 ||
         !category ||
@@ -42,7 +46,8 @@ export async function list_service(req: Request, res: Response): Promise<any>{
             jsonStingifiedAvailabilty: jsonStingifiedAvailabilty,
             imagesUrlArrayString: imagesUrlArrayString,
             userId: userId,
-            school: schoolArray[i]
+            school: schoolArray[i],
+            priceType: priceType
         })
     
         await newService.save()
@@ -96,7 +101,8 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
         inPerson,
         availability,
         imagesUrlArrayString,
-        schoolArray
+        schoolArray,
+        priceType
     } = req.body
     const userId = req.user.userId
     const serviceId = req.params.serviceId
@@ -104,6 +110,7 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
     if(
         schoolArray.length < 1 ||
         !title ||
+        !priceType ||
         !description ||
         !price || price <= 0 ||
         !category ||
@@ -124,6 +131,7 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
     }
 
     const services = await Service.findAll({where: {
+        priceType: oldService.priceType,
         title: oldService?.title,
         description: oldService?.description,
         price: oldService?.price,
@@ -162,7 +170,8 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
                 jsonStingifiedAvailabilty: jsonStingifiedAvailabilty,
                 imagesUrlArrayString: imagesUrlArrayString,
                 userId: userId,
-                school: schoolArray[i]
+                school: schoolArray[i],
+                priceType: priceType
             })
             
             await newService.save()
@@ -205,4 +214,11 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
     }
 
     return res.status(200).json("Service edited successfully.")
+}
+
+export async function search_services(req: Request, res: Response): Promise<any>{
+    const searchedText = req.params.searchedText
+    const services = await sequelize.query(sql`SELECT * FROM Customers WHERE CustomerName LIKE ${searchedText}`)
+
+    return res.json(services)
 }
