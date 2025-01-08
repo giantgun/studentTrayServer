@@ -124,20 +124,57 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
 
 export async function get__business_public(req: Request, res: Response): Promise<any> {
     const businessId = req.params.businessId
-    const reviews = await Review.findAll({where: { businessId: businessId }})
+    const loggedInUserSchool = req.user.school
+
+    const reviews = await Review.findAll({where: { businessId: businessId, }})
     const business = await Business.findOne({where: { businessId: businessId }})
     const user = await User.findOne({where: { userId: business?.userId}})
+    const items = await Item.findAll({where: { userId: user?.userId, school: loggedInUserSchool }})
+    const services = await Service.findAll({where: { userId: user?.userId, school: loggedInUserSchool }})
+    const lodges = await Lodge.findAll({where: { userId: user?.userId, nearestSchool: loggedInUserSchool }})
+    const rooms = await Room.findAll({where: { userId: user?.userId, nearestSchool: loggedInUserSchool }})
+    
+    return res.json({
+        businessName: business?.businessName,
+        businessEmail: business?.businessEmail,
+        nearestSchool: business?.nearestSchool,
+        photoUrl: business?.photoUrl,
+        coverPhotoUrl: business?.coverPhotoUrl,
+        businessId: business?.businessId,
+        phoneNumber: business?.phoneNumber,
+        dateJoined: business?.createdAt,
+        description: business?.description,
+        reviews: reviews,
+        items: items,
+        services: services,
+        lodges: lodges,
+        rooms: rooms
+    })
+
+
+}
+
+export async function get__business_private(req: Request, res: Response): Promise<any> {
+    const userId = req.user.userId
+    const user= req.user
+
+    const business = await Business.findOne({where: { userId: userId }})
+    const reviews = await Review.findAll({where: { businessId: business?.businessId }})
     const items = await Item.findAll({where: { userId: user?.userId }})
     const services = await Service.findAll({where: { userId: user?.userId }})
     const lodges = await Lodge.findAll({where: { userId: user?.userId }})
     const rooms = await Room.findAll({where: { userId: user?.userId }})
     
     return res.json({
-        username: user?.username,
-        school: user?.school,
-        photoUrl: user?.photoUrl,
-        bussinessId: business?.businessId,
+        businessName: business?.businessName,
+        businessEmail: business?.businessEmail,
+        nearestSchool: business?.nearestSchool,
+        photoUrl: business?.photoUrl,
+        coverPhotoUrl: business?.coverPhotoUrl,
+        businessId: business?.businessId,
         phoneNumber: business?.phoneNumber,
+        dateJoined: business?.createdAt,
+        description: business?.description,
         reviews: reviews,
         items: items,
         services: services,

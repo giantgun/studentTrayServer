@@ -38,7 +38,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare school: string;
 
   @Attribute(DataTypes.STRING)
-  @Default('John')
+  @AllowNull
   declare photoUrl: CreationOptional<string>;
 
   @Attribute(DataTypes.STRING)

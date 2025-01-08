@@ -1,12 +1,16 @@
 import { FindOptions, InferAttributes } from "@sequelize/core"
 import {User} from "../models/user"
 import argon2 from "argon2"
-import { Response, Request } from "express"
+import { Response, Request, NextFunction } from "express"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import { testDbConnection } from "../config/database"
 import { Business } from "../models/business"
 import { Review } from "../models/reviews"
+import { Item } from "../models/item"
+import { Lodge } from "../models/lodge"
+import { Room } from "../models/room"
+import { Service } from "../models/service"
 
 testDbConnection()
 dotenv.config()
@@ -159,19 +163,50 @@ export async function edit_profile(req: Request, res: Response): Promise<any>{
 
 export async function get_user_public(req: Request, res: Response): Promise<any> {
     const userId = req.params.userId
+
+    const user = await User.findOne({where: { userId: userId }})
+    return res.json({
+        username: user?.username,
+        school: user?.school,
+        photoUrl: user?.photoUrl,
+        dateJoined: user?.createdAt,
+    })
+
+
+}
+
+export async function get_user_private(req: Request, res: Response): Promise<any> {
+    const userId = req.user.userId
+
     const reviews = await Review.findAll({where: { userId: userId }})
     const user = await User.findOne({where: { userId: userId }})
     const business = await Business.findOne({where: { userId: userId }})
+    const items = await Item.findAll({where: { userId: user?.userId }})
+    const services = await Service.findAll({where: { userId: user?.userId }})
+    const lodges = await Lodge.findAll({where: { userId: user?.userId }})
+    const rooms = await Room.findAll({where: { userId: user?.userId }})
     
     return res.json({
         username: user?.username,
         school: user?.school,
         photoUrl: user?.photoUrl,
-        bussinessId: business?.businessId,
-        reviews: reviews
+        businessId: business?.businessId,
+        reviews: reviews,
+        dateOfBirth: user?.dateOfBirth,
+        items: items,
+        services: services,
+        lodges: lodges,
+        rooms: rooms
     })
 
 
+}
+
+export async function get_user_photo_url_for_overwrite(req: Request, res: Response, next: NextFunction){
+    const user = req.user
+
+    req.urlToOverwrite = user?.photoUrl
+    next()
 }
 
 async function generateAccessToken(email: string ){

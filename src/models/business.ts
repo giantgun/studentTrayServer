@@ -7,7 +7,7 @@ import {
     Model, 
     NonAttribute
 } from "@sequelize/core";
-import { Attribute, AutoIncrement, BelongsTo, NotNull, PrimaryKey } from "@sequelize/core/decorators-legacy";
+import { AllowNull, Attribute, AutoIncrement, BelongsTo, NotNull, PrimaryKey } from "@sequelize/core/decorators-legacy";
 import { User } from "./user";
 
 
@@ -68,6 +68,14 @@ export class Business extends Model<InferAttributes<Business>, InferCreationAttr
     @Attribute(DataTypes.STRING)
     @NotNull
     declare description: string;
+
+    @Attribute(DataTypes.STRING)
+    @AllowNull
+    declare photoUrl: CreationOptional<string>;
+
+    @Attribute(DataTypes.STRING)
+    @AllowNull
+    declare coverPhotoUrl: CreationOptional<string>;
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
