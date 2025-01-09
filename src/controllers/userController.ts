@@ -209,6 +209,19 @@ export async function get_user_photo_url_for_overwrite(req: Request, res: Respon
     next()
 }
 
+export async function save_user_photo_url(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const { photoUrl } = req.body
+
+    const editedUser = await User.findOne( { where: { userId: user.userId } } as FindOptions<InferAttributes<User, { omit: never; }>> )
+
+    editedUser!.photoUrl = photoUrl
+    await editedUser!.save()
+
+    console.log(photoUrl)
+    return res.json("Upload succesful.")
+}
+
 async function generateAccessToken(email: string ){
     return jwt.sign({email: email}, tokenSecret!, { expiresIn: "7d" })
 }

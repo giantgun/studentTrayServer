@@ -50,6 +50,10 @@ export class Review extends Model<InferAttributes<Review>, InferCreationAttribut
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare numberOfStars: number
+    
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare ownerUserId: number
 
     @Attribute(DataTypes.TEXT('long'))
     @NotNull

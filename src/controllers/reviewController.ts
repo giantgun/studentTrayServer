@@ -2,6 +2,7 @@ import { Request, Response, } from "express"
 import { Review } from "../models/reviews"
 
 export async function create_user_review(req: Request, res: Response): Promise<any>{
+    const ownerUserId = req.user.userId
     const { numberOfStars, description } = req.body
     const userId = Number(req.params.userId)
 
@@ -9,12 +10,14 @@ export async function create_user_review(req: Request, res: Response): Promise<a
         numberOfStars,
         description,
         userId,
+        ownerUserId
     })
     await newReview.save()
     return res.status(200).json("You've successfully reviewed the user.")
 }
 
 export async function create_business_review(req: Request, res: Response): Promise<any>{
+    const ownerUserId = req.user.userId
     const { numberOfStars, description } = req.body
     const businessId = Number(req.params.businessId)
 
@@ -22,6 +25,7 @@ export async function create_business_review(req: Request, res: Response): Promi
         numberOfStars,
         description,
         businessId,
+        ownerUserId,
     })
     await newReview.save()
     return res.status(200).json("You've successfully reviewed the user.")

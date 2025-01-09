@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { Business } from "../models/business";
 import { FindOptions, InferAttributes } from "@sequelize/core";
 import { Review } from "../models/reviews";
@@ -183,4 +183,46 @@ export async function get__business_private(req: Request, res: Response): Promis
     })
 
 
+}
+
+export async function get_business_photo_url_for_overwrite(req: Request, res: Response, next: NextFunction){
+    const user = req.user
+
+    const business = await Business.findOne( { where: { userId: user.userId } } )
+
+    req.urlToOverwrite = business?.photoUrl
+    next()
+}
+
+export async function save_business_photo_url(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const { photoUrl } = req.body
+
+    const business = await Business.findOne( { where: { userId: user.userId } } )
+
+    business!.photoUrl = photoUrl
+    await business!.save()
+
+    return res.json("Upload succesful.")
+}
+
+export async function get_business_cover_photo_url_for_overwrite(req: Request, res: Response, next: NextFunction){
+    const user = req.user
+
+    const business = await Business.findOne( { where: { userId: user.userId } } )
+
+    req.urlToOverwrite = business?.coverPhotoUrl
+    next()
+}
+
+export async function save_business_cover_photo_url(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const { coverPhotoUrl } = req.body
+
+    const business = await Business.findOne( { where: { userId: user.userId } } )
+
+    business!.coverPhotoUrl = coverPhotoUrl
+    await business!.save()
+
+    return res.json("Upload succesful.")
 }
