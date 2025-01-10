@@ -6,6 +6,7 @@ import { Op } from "@sequelize/core"
 
 export async function list_item(req: Request, res: Response): Promise<any>{
     const {
+        videoUrl,
         imagesUrlArrayString,
         title,
         description,
@@ -25,13 +26,15 @@ export async function list_item(req: Request, res: Response): Promise<any>{
         !condition ||
         !category ||
         !schoolArray ||
-        !numberInStock
+        !numberInStock ||
+        typeof videoUrl !== "string"
     ){
         return res.status(400).json("Invalid Input.")
     }
 
     for (let i = 0; i < schoolArray.length; i++) {
         const newItem = new Item({
+            videoUrl,
             imagesUrlArrayString,
             title,
             description,
@@ -88,14 +91,29 @@ export async function delete_item(req: Request, res: Response): Promise<any>{
     const user = req.user
     const itemId = req.params.itemId
 
-    await Item.destroy({where: { userId: user.userId, itemId: itemId }})
+    const oldItem = await Item.findOne({ where: { itemId: itemId, userId: user.userId  } })
+    
+    if(!oldItem){
+        return res.status(400).json("Invalid Input.")
+    }
+
+    await Item.destroy({where: { 
+        userId: user.userId,
+        videoUrl: oldItem.dataValues.videoUrl,
+        imagesUrlArrayString: oldItem.dataValues.imagesUrlArrayString,
+        title: oldItem.dataValues.title,
+        description: oldItem.dataValues.description,
+        price: oldItem.dataValues.price,
+        condition: oldItem.dataValues.condition,
+        category: oldItem.dataValues.category,
+        numberInStock: oldItem.dataValues.numberInStock
+    }})
 
     return res.status(200).json("The item has been deleted successfully.")
 }
 
 export async function edit_item(req: Request, res: Response): Promise<any>{
     const {
-        imagesUrlArrayString,
         title,
         description,
         price,
@@ -108,7 +126,6 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
     const itemId = req.params.itemId
 
     if(
-        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1 ||
         !title ||
         !description ||
         !price ||
@@ -121,12 +138,15 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
     }
 
     const oldItem = await Item.findOne({where:{
-        itemId: itemId
+        itemId: itemId,
+        userId
     }})
-
+    
     if(!oldItem){
         return res.status(400).json("invalid input.")
     }
+    
+    const imagesUrlArrayString = oldItem?.dataValues.imagesUrlArrayString
 
     const items = await Item.findAll({where: {
         title: oldItem?.title,
@@ -164,7 +184,7 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
                     category,
                     userId,
                     numberInStock,
-                    school: schoolArray[i]
+                    school: schoolArray[i+items.length]
                 })
                 await newItem.save()
             }
@@ -198,7 +218,7 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
             await items[i]!.save()
         }
         for (let i = 0; i < items.slice(schoolArray.length).length ; i++){
-            items[i].destroy()
+            items[i+schoolArray.length].destroy()
         }
     }
 

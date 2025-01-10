@@ -7,7 +7,7 @@ import {
     NonAttribute,
     BelongsToSetAssociationMixin,
 } from '@sequelize/core'
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from '@sequelize/core/decorators-legacy'
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo, AllowNull } from '@sequelize/core/decorators-legacy'
 import { User } from './user'
 
 export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<Room>>{
@@ -130,6 +130,10 @@ export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<
 
     @Attribute(DataTypes.STRING)
     declare additionalInfo: string
+
+    @Attribute(DataTypes.TEXT('long'))
+    @AllowNull
+    declare videoUrl:  CreationOptional<string>
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

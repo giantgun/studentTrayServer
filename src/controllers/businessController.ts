@@ -123,16 +123,33 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
 }
 
 export async function get__business_public(req: Request, res: Response): Promise<any> {
-    const businessId = req.params.businessId
-    const loggedInUserSchool = req.user.school
+    const businessId = Number(req.params.businessId)
+    const loggedInUserSchool = req.user.dataValues.school
 
     const reviews = await Review.findAll({where: { businessId: businessId, }})
-    const business = await Business.findOne({where: { businessId: businessId }})
-    const user = await User.findOne({where: { userId: business?.userId}})
+    const business = await Business.findByPk(businessId)
+
+    if(!business){
+        return res.status(400).json("Business does not exist")
+    }
+
+    const user = await User.findByPk(business?.userId)
     const items = await Item.findAll({where: { userId: user?.userId, school: loggedInUserSchool }})
     const services = await Service.findAll({where: { userId: user?.userId, school: loggedInUserSchool }})
     const lodges = await Lodge.findAll({where: { userId: user?.userId, nearestSchool: loggedInUserSchool }})
     const rooms = await Room.findAll({where: { userId: user?.userId, nearestSchool: loggedInUserSchool }})
+
+    let businessReviews = []
+
+    for (let i = 0; i < reviews.length ; i++){
+        const owner = await User.findByPk(reviews[i].dataValues.ownerUserId)
+        const review = {
+            ...reviews[i].dataValues,
+            ownerPhotoUrl: owner?.photoUrl,
+            username: owner?.username,
+        }
+        businessReviews.push(review)
+    }
     
     return res.json({
         businessName: business?.businessName,
@@ -144,7 +161,7 @@ export async function get__business_public(req: Request, res: Response): Promise
         phoneNumber: business?.phoneNumber,
         dateJoined: business?.createdAt,
         description: business?.description,
-        reviews: reviews,
+        reviews: businessReviews,
         items: items,
         services: services,
         lodges: lodges,
@@ -159,11 +176,29 @@ export async function get__business_private(req: Request, res: Response): Promis
     const user= req.user
 
     const business = await Business.findOne({where: { userId: userId }})
+
+    if(!business){
+        return res.status(400).json("Business does not exist")
+    }
+
     const reviews = await Review.findAll({where: { businessId: business?.businessId }})
     const items = await Item.findAll({where: { userId: user?.userId }})
     const services = await Service.findAll({where: { userId: user?.userId }})
     const lodges = await Lodge.findAll({where: { userId: user?.userId }})
     const rooms = await Room.findAll({where: { userId: user?.userId }})
+    
+    let businessReviews = []
+
+    for (let i = 0; i < reviews.length ; i++){
+        const owner = await User.findByPk(reviews[i].dataValues.ownerUserId)
+        const review = {
+            ...reviews[i].dataValues,
+            ownerPhotoUrl: owner?.photoUrl,
+            username: owner?.username,
+        }
+        businessReviews.push(review)
+    }
+    
     
     return res.json({
         businessName: business?.businessName,
@@ -175,7 +210,7 @@ export async function get__business_private(req: Request, res: Response): Promis
         phoneNumber: business?.phoneNumber,
         dateJoined: business?.createdAt,
         description: business?.description,
-        reviews: reviews,
+        reviews: businessReviews,
         items: items,
         services: services,
         lodges: lodges,

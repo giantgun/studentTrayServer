@@ -15,7 +15,8 @@ export async function list_service(req: Request, res: Response): Promise<any>{
         inPerson,
         availability,
         imagesUrlArrayString,
-        schoolArray
+        schoolArray,
+        videoUrl,
     } = req.body
     const userId = req.user.userId
 
@@ -46,7 +47,8 @@ export async function list_service(req: Request, res: Response): Promise<any>{
             imagesUrlArrayString: imagesUrlArrayString,
             userId: userId,
             school: schoolArray[i],
-            priceType: priceType
+            priceType: priceType,
+            videoUrl,
         })
     
         await newService.save()
@@ -98,7 +100,24 @@ export async function delete_service(req: Request, res: Response): Promise<any>{
     const user = req.user
     const serviceId = req.params.serviceId
 
-    await Service.destroy({where: { userId: user.userId, ServiceId: serviceId }})
+    const oldService = await Service.findOne({ where: { ServiceId: serviceId, userId: user.userId  } })
+        
+    if(!oldService){
+        return res.status(400).json("Invalid Input.")
+    }
+
+    await Service.destroy({where: { 
+        userId: user.userId,
+        title: oldService.dataValues.title,
+        description: oldService.dataValues.description,
+        price: oldService.dataValues.price,
+        priceType: oldService.dataValues.priceType,
+        category: oldService.dataValues.category,
+        online: oldService.dataValues.online,
+        inPerson: oldService.dataValues.inPerson,
+        jsonStingifiedAvailabilty: oldService.dataValues.jsonStingifiedAvailabilty,
+        videoUrl: oldService.dataValues.videoUrl,
+    }})
     return res.status(200).json("The service has been deleted successfully.")
 }
 
@@ -111,7 +130,6 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
         online,
         inPerson,
         availability,
-        imagesUrlArrayString,
         schoolArray,
         priceType
     } = req.body
@@ -126,8 +144,7 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
         !price || price <= 0 ||
         !category ||
         (!online && !inPerson) ||
-        !availability ||
-        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
+        !availability
     ){
         return res.status(400).json("Invalid input.")
     }
@@ -140,6 +157,8 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
     if(!oldService){
         return res.status(400).json("invalid input.")
     }
+
+    const imagesUrlArrayString = oldService.dataValues.imagesUrlArrayString
 
     const services = await Service.findAll({where: {
         priceType: oldService.priceType,
@@ -181,7 +200,7 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
                 jsonStingifiedAvailabilty: jsonStingifiedAvailabilty,
                 imagesUrlArrayString: imagesUrlArrayString,
                 userId: userId,
-                school: schoolArray[i],
+                school: schoolArray[i+services.length],
                 priceType: priceType
             })
             
@@ -220,7 +239,7 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
             await services[i]!.save()
         }
         for (let i = 0; i < services.slice(schoolArray.length).length ; i++){
-            services[i].destroy()
+            services[i+schoolArray.length].destroy()
         }
     }
 

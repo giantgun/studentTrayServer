@@ -11,17 +11,17 @@ import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo, Default, Allo
 import { User } from './user';
 import { Business } from './business';
 
-export class Review extends Model<InferAttributes<Review>, InferCreationAttributes<Review>>{
+export class Advert extends Model<InferAttributes<Advert>, InferCreationAttributes<Advert>>{
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement
     @NotNull
-    declare reviewId: CreationOptional<number>
+    declare advertId: CreationOptional<number>
 
     @BelongsTo(() => User, {
         foreignKey:  'userId',
         inverse: {
-            as: 'reviews',
+            as: 'adverts',
             type: 'hasMany',
             },
     })
@@ -36,7 +36,7 @@ export class Review extends Model<InferAttributes<Review>, InferCreationAttribut
     @BelongsTo(() => Business, {
         foreignKey:  'businessId',
         inverse: {
-            as: 'reviews',
+            as: 'adverts',
             type: 'hasMany',
             },
     })
@@ -47,17 +47,33 @@ export class Review extends Model<InferAttributes<Review>, InferCreationAttribut
 
     declare setBusinessId: BelongsToSetAssociationMixin<Business, Business['businessId']>
 
-    @Attribute(DataTypes.INTEGER)
+    @Attribute(DataTypes.STRING)
     @NotNull
-    declare numberOfStars: number
-    
-    @Attribute(DataTypes.INTEGER)
-    @NotNull
-    declare ownerUserId: number
+    declare title: string;
 
     @Attribute(DataTypes.TEXT('long'))
     @NotNull
-    declare description: string
+    declare content: string
+
+    @Attribute(DataTypes.STRING)
+    @NotNull
+    declare school: string;
+
+    @Attribute(DataTypes.STRING)
+    @AllowNull
+    declare actionLink: string;
+
+    @Attribute(DataTypes.STRING)
+    @AllowNull
+    declare actionPhoneNumber: string;
+
+    @Attribute(DataTypes.STRING)
+    @AllowNull
+    declare actionWhatsappNumber: string;
+
+    @Attribute(DataTypes.TEXT('long'))
+    @NotNull
+    declare imagesUrlArrayString: string
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

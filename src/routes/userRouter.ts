@@ -5,7 +5,7 @@ import dotenv from "dotenv"
 import { index_get } from "../controllers/indexController"
 import { authorization } from "../utils/authorization"
 import { giveAuthorization } from "../utils/giveAuthorization"
-import { create_user_review } from "../controllers/reviewController"
+import { create_user_review, get_a_user_reviews } from "../controllers/reviewController"
 
 dotenv.config()
 
@@ -32,5 +32,7 @@ router.get("/public/:userId", asyncHandler(authorization), asyncHandler(get_user
 router.get("/profile", asyncHandler(authorization), asyncHandler(get_user_private))
 
 router.post("/review/:userId", asyncHandler(authorization), asyncHandler(create_user_review))
+
+router.get("/review/:userId", asyncHandler(authorization), asyncHandler(get_a_user_reviews))
 
 export default router

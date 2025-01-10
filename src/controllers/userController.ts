@@ -165,11 +165,30 @@ export async function get_user_public(req: Request, res: Response): Promise<any>
     const userId = req.params.userId
 
     const user = await User.findOne({where: { userId: userId }})
+    const reviews = await Review.findAll({where: { userId: userId }})
+
+    if(!user){
+        return res.status(400).json("User exist")
+    }
+
+    let userReviews = []
+
+    for (let i = 0; i < reviews.length ; i++){
+        const owner = await User.findByPk(reviews[i].dataValues.ownerUserId)
+        const review = {
+            ...reviews[i].dataValues,
+            ownerPhotoUrl: owner?.photoUrl,
+            username: owner?.username,
+        }
+        userReviews.push(review)
+    }
+
     return res.json({
         username: user?.username,
         school: user?.school,
         photoUrl: user?.photoUrl,
         dateJoined: user?.createdAt,
+        reviews: userReviews,
     })
 
 
@@ -180,18 +199,35 @@ export async function get_user_private(req: Request, res: Response): Promise<any
 
     const reviews = await Review.findAll({where: { userId: userId }})
     const user = await User.findOne({where: { userId: userId }})
+
+    if(!user){
+        return res.status(400).json("User exist")
+    }
+
     const business = await Business.findOne({where: { userId: userId }})
     const items = await Item.findAll({where: { userId: user?.userId }})
     const services = await Service.findAll({where: { userId: user?.userId }})
     const lodges = await Lodge.findAll({where: { userId: user?.userId }})
     const rooms = await Room.findAll({where: { userId: user?.userId }})
+
+    let userReviews = []
+
+    for (let i = 0; i < reviews.length ; i++){
+        const owner = await User.findByPk(reviews[i].dataValues.ownerUserId)
+        const review = {
+            ...reviews[i].dataValues,
+            ownerPhotoUrl: owner?.photoUrl,
+            username: owner?.username,
+        }
+        userReviews.push(review)
+    }
     
     return res.json({
         username: user?.username,
         school: user?.school,
         photoUrl: user?.photoUrl,
         businessId: business?.businessId,
-        reviews: reviews,
+        reviews: userReviews,
         dateOfBirth: user?.dateOfBirth,
         items: items,
         services: services,

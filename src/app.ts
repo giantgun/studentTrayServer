@@ -9,6 +9,7 @@ import roomRouter from "./routes/roomRouter"
 import itemRouter from "./routes/itemRouter"
 import serviceRouter from "./routes/serviceRouter"
 import businessRouter from "./routes/businessRouter"
+import advertRouter from "./routes/advertRouter"
 import cloudinaryRouter from "./routes/cloudinaryRouter"
 import cors from "cors"
 
@@ -33,6 +34,7 @@ app.use(/\/rooms*/, roomRouter)
 app.use(/\/items*/, itemRouter)
 app.use(/\/services*/, serviceRouter)
 app.use(/\/business*/, businessRouter)
+app.use(/\/adverts*/, advertRouter)
 
 //error handling
 app.use((req, res, next) => {

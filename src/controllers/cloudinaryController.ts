@@ -3,7 +3,7 @@ import { extractPublicId } from 'cloudinary-build-url'
 const cloudinary = require('cloudinary').v2
 require('dotenv').config()
 
-export async function get_image_signature(req: Request, res: Response): Promise<any>{
+export async function get_file_signature(req: Request, res: Response): Promise<any>{
     const urlToOverwrite = req.urlToOverwrite
 
     if(urlToOverwrite){

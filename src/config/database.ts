@@ -8,6 +8,7 @@ import { Item } from '../models/item'
 import { Service } from '../models/service'
 import { Business } from '../models/business'
 import { Review } from '../models/reviews'
+import { Advert } from '../models/advert'
 
 dotenv.config()
 
@@ -28,6 +29,7 @@ const sequelize = new Sequelize({
       Service,
       Business,
       Review,
+      Advert
     ],
   });
 

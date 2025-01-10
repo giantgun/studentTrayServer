@@ -7,7 +7,7 @@ import {
     NonAttribute,
     BelongsToSetAssociationMixin,
   } from '@sequelize/core'
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo, Default } from '@sequelize/core/decorators-legacy'
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo, Default, AllowNull } from '@sequelize/core/decorators-legacy'
 import { User } from './user';
 
 export class Service extends Model<InferAttributes<Service>, InferCreationAttributes<Service>>{
@@ -71,6 +71,10 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
     @Attribute(DataTypes.STRING)
     @NotNull
     declare priceType: string;
+
+    @Attribute(DataTypes.TEXT('long'))
+    @AllowNull
+    declare videoUrl:  CreationOptional<string>
 
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;

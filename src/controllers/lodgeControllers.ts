@@ -28,7 +28,8 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         phoneNumber,
         imagesUrlArrayString,
         numberOfLodges,
-        agentFee
+        agentFee,
+        videoUrl,
       } = req.body
     const userId = req.user.userId
     
@@ -75,7 +76,8 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
       userId: userId,
       numberAvailable: numberOfLodges,
       imagesUrlArrayString: imagesUrlArrayString,
-      agentFee: agentFee
+      agentFee: agentFee,
+      videoUrl,
     })
     await newLodge.save()
     return res.status(200).json("The lodge has been listed.")
@@ -120,8 +122,41 @@ export async function get_a_lodge(req: Request, res: Response): Promise<any>{
 export async function delete_lodge(req: Request, res: Response): Promise<any>{
     const user = req.user
     const lodgeId = req.params.lodgeId
+
+    const oldLodge = await Lodge.findOne({ where: { lodgeId: lodgeId, userId: user.userId  } })
+        
+    if(!oldLodge){
+        return res.status(400).json("Invalid Input.")
+    }
     
-    await Lodge.destroy({where: { userId: user.userId, lodgeId: lodgeId }})
+    await Lodge.destroy({where: {
+        userId: user.userId,
+        propertyType: oldLodge.dataValues.propertyType,
+        numberOfBedrooms: oldLodge.dataValues.numberOfBedrooms,
+        numberOfBathrooms : oldLodge.dataValues.numberOfBathrooms,
+        paymentFrequency: oldLodge.dataValues.paymentFrequency,
+        price: oldLodge.dataValues.price,
+        priceType: oldLodge.dataValues.priceType,
+        location: oldLodge.dataValues.location,
+        nearestSchool: oldLodge.dataValues.nearestSchool,
+        walkingTime: oldLodge.dataValues.walkingTime,
+        kekeTime: oldLodge.dataValues.kekeTime,
+        description: oldLodge.dataValues.description,
+        WiFi: oldLodge.dataValues.WiFi,
+        parking: oldLodge.dataValues.parking,
+        electricity: oldLodge.dataValues.electricity,
+        water: oldLodge.dataValues.water,
+        electricityDescription: oldLodge.dataValues.electricityDescription,
+        waterDescription: oldLodge.dataValues.waterDescription,
+        networkQuality: oldLodge.dataValues.networkQuality,
+        networkDescription: oldLodge.dataValues.networkDescription,
+        phoneNumber: oldLodge.dataValues.phoneNumber,
+        imagesUrlArrayString: oldLodge.dataValues.phoneNumber,
+        numberAvailable: oldLodge.dataValues.numberAvailable,
+        agentFee: oldLodge.dataValues.agentFee,
+        videoUrl: oldLodge.dataValues.videoUrl,
+       
+      }})
     return res.status(200).json("The lodge has been deleted successfully.")
 }
 

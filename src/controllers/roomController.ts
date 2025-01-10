@@ -31,7 +31,8 @@ export async function list_room(req: Request, res: Response): Promise<any> {
         ownerProgramme,
         yearOfStudy,
         dateOfBirth,
-        additionalInfo
+        additionalInfo,
+        videoUrl,
     } = req.body
     
     if(
@@ -85,7 +86,8 @@ export async function list_room(req: Request, res: Response): Promise<any> {
         yearOfStudy: yearOfStudy,
         dateOfBirth: dateOfBirth,
         additionalInfo: additionalInfo,
-        userId: userId
+        userId: userId,
+        videoUrl,
     })
 
     await newRoom.save()
