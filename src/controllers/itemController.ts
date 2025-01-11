@@ -1,4 +1,4 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import { Item } from "../models/item"
 import { Business } from "../models/business"
 import { User } from "../models/user"
@@ -26,8 +26,7 @@ export async function list_item(req: Request, res: Response): Promise<any>{
         !condition ||
         !category ||
         !schoolArray ||
-        !numberInStock ||
-        typeof videoUrl !== "string"
+        !numberInStock
     ){
         return res.status(400).json("Invalid Input.")
     }
@@ -110,6 +109,21 @@ export async function delete_item(req: Request, res: Response): Promise<any>{
     }})
 
     return res.status(200).json("The item has been deleted successfully.")
+}
+
+export async function get_item_images_url_for_delete(req: Request, res: Response, next: NextFunction): Promise<any>{
+    const user = req.user
+    const itemId = req.params.itemId
+
+    const oldItem = await Item.findOne({ where: { itemId: itemId, userId: user.userId  } })
+    
+    if(!oldItem){
+        console.log()
+        return res.status(400).json("Invalid Input.")
+    }
+    console.log("deleted Successfully")
+    req.urlArrayToDelete = oldItem.imagesUrlArrayString.split(",")
+    next()
 }
 
 export async function edit_item(req: Request, res: Response): Promise<any>{
@@ -223,4 +237,31 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
     }
 
     return res.status(200).json("Item edited successfully.")
+}
+
+export async function get_an_item_for_edit(req: Request, res: Response): Promise<any>{
+    const userId = req.user.userId
+    const itemId = req.params.itemId
+
+    const oldItem = await Item.findOne({where:{
+        itemId: itemId,
+        userId
+    }})
+    
+    if(!oldItem){
+        return res.status(400).json("invalid input.")
+    }
+
+    const items = await Item.findAll({where: {
+        title: oldItem?.title,
+        description: oldItem?.description,
+        price: oldItem?.price,
+        category: oldItem?.category,
+        imagesUrlArrayString: oldItem?.imagesUrlArrayString,
+        condition: oldItem?.condition,
+        numberInStock: oldItem?.numberInStock,
+        userId
+    }})
+
+    return res.status(200).json(items)
 }
