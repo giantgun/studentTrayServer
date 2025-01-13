@@ -1,0 +1,205 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId      Int        @id @default(autoincrement())
+  username    String     @db.VarChar(255) @unique
+  email       String     @db.VarChar(255) @unique
+  password    String     @db.VarChar(255)
+  photoUrl    String?    @db.VarChar(255)
+  phoneNumber String     @db.VarChar(255)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  business    Business?
+  reviews     Review[]
+  services    Service[]
+  items       Item[]
+  lodges      Lodge[]
+  rooms       Room[]
+  school      School    @relation(fields: [schoolId], references: [schoolId])
+  schoolId    Int
+}
+
+model School {
+  schoolId   Int              @id @default(autoincrement())
+  schoolName String           @db.VarChar(255)
+  createdAt  DateTime         @default(now())
+
+  services   Service_School[]
+  items      Item_School[]
+  rooms      Room[]
+  lodges     Lodge[]
+  businesses Business[]
+  users      User[]
+}
+
+model Service_School {
+  service    Service @relation(fields: [serviceId], references: [serviceId])
+  serviceId  Int
+  school     School  @relation(fields: [schoolId], references: [schoolId])
+  schoolId   Int
+
+  @@id([serviceId, schoolId])
+}
+
+model Service {
+  serviceId                 Int              @id @default(autoincrement())
+  user                      User             @relation(fields: [userId], references: [userId])
+  userId                    Int
+  imagesUrlArrayString      String           @db.Text
+  title                     String   
+  description               String           @db.LongText
+  price                     Int    
+  category                  String
+  online                    String           @default("")
+  inPerson                  String           @default("")
+  jsonStingifiedAvailabilty String
+  priceType                 String
+  videoUrl                  String           @db.Text
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
+
+  schools                   Service_School[]
+}
+
+model Room {
+  roomId                 Int              @id @default(autoincrement())
+  user                   User             @relation(fields: [userId], references: [userId])
+  userId                 Int
+  school                 School          @relation(fields: [schoolId], references: [schoolId])
+  schoolId               Int
+  imagesUrlArrayString   String           @db.Text
+  propertyType           String
+  numberOfBedrooms       Int
+  numberOfBathrooms      Int
+  paymentFrequency       String
+  price                  Int
+  priceType              String
+  location               String
+  nearestSchool          String
+  walkingTime            Int
+  kekeTime               Int
+  description            String           @db.LongText
+  WiFi                   Boolean          @default(false)
+  parking                Boolean          @default(false)
+  electricity            Boolean          @default(false)
+  water                  Boolean          @default(false)
+  electricityDescription String           @db.LongText
+  waterDescription       String           @db.LongText
+  networkQuality         String
+  networkDescription     String           @db.LongText
+  ownerName              String
+  ownerPhone             String
+  ownerProgramme         String
+  yearOfStudy            String
+  dateOfBirth            String
+  additionalInfo         String?          @db.LongText
+  videoUrl               String?          @db.Text
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+}
+
+model Lodge {
+  lodgeId                Int              @id @default(autoincrement())
+  user                   User             @relation(fields: [userId], references: [userId])
+  userId                 Int
+  school                 School           @relation(fields: [schoolId], references: [schoolId])
+  schoolId               Int
+  imagesUrlArrayString   String           @db.Text
+  propertyType           String
+  numberOfBedrooms       Int
+  numberOfBathrooms      Int
+  paymentFrequency       String
+  price                  Int
+  priceType              String
+  location               String
+  nearestSchool          String
+  walkingTime            Int
+  kekeTime               Int
+  description            String           @db.LongText
+  WiFi                   Boolean          @default(false)
+  parking                Boolean          @default(false)
+  electricity            Boolean          @default(false)
+  water                  Boolean          @default(false)
+  electricityDescription String           @db.LongText
+  waterDescription       String           @db.LongText
+  networkQuality         String
+  networkDescription     String           @db.LongText
+  videoUrl               String?          @db.Text
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+}
+
+model Item_School {
+  item     Item    @relation(fields: [itemId], references: [itemId])
+  itemId   Int
+  school   School  @relation(fields: [schoolId], references: [schoolId])
+  schoolId Int
+
+  @@id([itemId, schoolId])
+}
+
+model Item {
+  itemId                Int              @id @default(autoincrement())
+  user                  User             @relation(fields: [userId], references: [userId])
+  userId                Int
+  imagesUrlArrayString  String           @db.Text
+  title                 String
+  description           String           @db.LongText
+  price                 Int 
+  condition             String
+  category              String
+  numberInStock         Int
+  videoUrl              String?          @db.Text
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  schools               Item_School[]
+}
+
+model Business {
+  businessId            Int              @id @default(autoincrement())
+  user                  User             @relation(fields: [userId], references: [userId])
+  userId                Int              @unique
+  firstName             String
+  lastName              String
+  businessName          String
+  address               String
+  nearestSchool         School           @relation(fields: [nearestSchoolId], references: [schoolId])
+  nearestSchoolId       Int
+  phoneNumber           String
+  businessEmail         String
+  description           String           @db.LongText
+  photoUrl              String?          @db.VarChar(255)
+  coverPhotoUrl         String?          @db.VarChar(255)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  reviews               Review[]
+}
+
+model Review {
+  reviewId              Int              @id @default(autoincrement())
+  user                  User             @relation(fields: [userId], references: [userId])
+  userId                Int
+  business              Business         @relation(fields: [businessId], references: [businessId])
+  businessId            Int
+  numberOfStars         Int
+  description           String           @db.LongText
+  ownerUserId           Int
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+}

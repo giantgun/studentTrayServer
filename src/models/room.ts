@@ -15,7 +15,7 @@ export class Room extends Model <InferAttributes<Room>, InferCreationAttributes<
     @AutoIncrement
     @PrimaryKey
     @NotNull
-    declare RoomId: CreationOptional<number>
+    declare roomId: CreationOptional<number>
 
     @BelongsTo(()=> User, {
         foreignKey: "userId",

@@ -115,13 +115,15 @@ export async function get_item_images_url_for_delete(req: Request, res: Response
     const user = req.user
     const itemId = req.params.itemId
 
+    if(!itemId || Number.isInteger(itemId) ){
+        return res.status(400).json("Invalid Input.")
+    }
+
     const oldItem = await Item.findOne({ where: { itemId: itemId, userId: user.userId  } })
     
     if(!oldItem){
-        console.log()
-        return res.status(400).json("Invalid Input.")
+        return res.status(400).json("Item has been deleted, or never existed.")
     }
-    console.log("deleted Successfully")
     req.urlArrayToDelete = oldItem.imagesUrlArrayString.split(",")
     next()
 }

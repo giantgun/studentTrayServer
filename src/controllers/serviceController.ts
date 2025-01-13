@@ -80,7 +80,7 @@ export async function get_a_service(req: Request, res: Response): Promise<any>{
     const user = req.user
     const serviceId = req.params.serviceId
 
-    const service= await Service.findOne({where: { school: user.school, ServiceId: serviceId }})
+    const service= await Service.findOne({where: { school: user.school, serviceId: serviceId }})
     const business = await Business.findOne({where: { userId: service?.userId }})
         if(business){
             return res.status(200).json({
@@ -100,7 +100,7 @@ export async function delete_service(req: Request, res: Response): Promise<any>{
     const user = req.user
     const serviceId = req.params.serviceId
 
-    const oldService = await Service.findOne({ where: { ServiceId: serviceId, userId: user.userId  } })
+    const oldService = await Service.findOne({ where: { serviceId: serviceId, userId: user.userId  } })
         
     if(!oldService){
         return res.status(400).json("Invalid Input.")
@@ -151,7 +151,7 @@ export async function edit_service(req: Request, res: Response): Promise<any>{
     const jsonStingifiedAvailabilty = JSON.stringify(availability)
 
     const oldService = await Service.findOne({where:{
-        ServiceId: serviceId
+        serviceId: serviceId
     }})
 
     if(!oldService){

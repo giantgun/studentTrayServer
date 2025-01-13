@@ -15,7 +15,7 @@ export class Service extends Model<InferAttributes<Service>, InferCreationAttrib
     @PrimaryKey
     @AutoIncrement
     @NotNull
-    declare ServiceId: CreationOptional<number>
+    declare serviceId: CreationOptional<number>
 
     @BelongsTo(() => User, {
         foreignKey:  'userId',

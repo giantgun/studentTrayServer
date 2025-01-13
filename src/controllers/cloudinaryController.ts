@@ -67,10 +67,20 @@ export async function delete_files(req: Request, res: Response, next: NextFuncti
     if(!urlArrayToDelete){
         return res.status(400).json("Invalid input.")
     }
+
+    const api_key = process.env.CLOUDINARY_API_KEY
+    const api_secret = process.env.CLOUDINARY_API_SECRET
+    const cloud_name = process.env.CLOUDINARY_CLOUD_NAME
+
     for (let i = 0; i < urlArrayToDelete.length ; i++){
         const public_id = extractPublicId(urlArrayToDelete[i])
 
-        await cloudinary.v2.uploader.destroy(public_id, { invalidate: true })
+        await cloudinary.uploader.destroy(public_id, { 
+            invalidate: true,
+            api_key,
+            api_secret,
+            cloud_name,
+        })
     }
     next()
 }

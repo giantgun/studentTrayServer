@@ -114,7 +114,7 @@ export async function get_a_room(req: Request, res: Response): Promise<any>{
     const user = req.user
     const roomId = req.params.roomId
 
-    const room= await Room.findOne({where: { nearestSchool: user.school, RoomId: roomId }})
+    const room= await Room.findOne({where: { nearestSchool: user.school, roomId: roomId }})
     const business = await Business.findOne({where: { userId: room?.userId }})
     if(business){
         return res.status(200).json({
@@ -133,7 +133,7 @@ export async function delete_room(req: Request, res: Response): Promise<any>{
     const user = req.user
     const roomId = req.params.roomId
 
-    await Room.destroy({where: { userId: user.userId, RoomId: roomId }})
+    await Room.destroy({where: { userId: user.userId, roomId: roomId }})
 
     return res.status(200).json("The room has been deleted successfully.")
 }
@@ -193,7 +193,7 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
     const user = req.user
     const roomId = req.params.roomId
 
-    const room = await Room.findOne({where: { userId: user.userId, RoomId: roomId }})
+    const room = await Room.findOne({where: { userId: user.userId, roomId: roomId }})
 
     if(!room){
         return res.status(400).json("invalid input.")
