@@ -2,12 +2,10 @@ import argon2 from "argon2"
 import { Response, Request, NextFunction } from "express"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
-import { testDbConnection } from "../config/database"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-testDbConnection()
 dotenv.config()
 
 const tokenSecret = process.env.TOKEN_SECRET
