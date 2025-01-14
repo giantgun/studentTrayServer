@@ -1,11 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
 }
 
 datasource db {
@@ -13,75 +8,118 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  userId      Int        @id @default(autoincrement())
-  username    String     @db.VarChar(255) @unique
-  email       String     @db.VarChar(255) @unique
-  password    String     @db.VarChar(255)
-  photoUrl    String?    @db.VarChar(255)
-  phoneNumber String     @db.VarChar(255)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+model business {
+  businessId      Int      @id @default(autoincrement())
+  userId          Int      @unique(map: "Business_userId_key")
+  firstName       String
+  lastName        String
+  businessName    String
+  address         String
+  nearestSchoolId Int
+  phoneNumber     String
+  businessEmail   String
+  description     String   @db.LongText
+  photoUrl        String?  @db.VarChar(255)
+  coverPhotoUrl   String?  @db.VarChar(255)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  school          school   @relation(fields: [nearestSchoolId], references: [schoolId], map: "Business_nearestSchoolId_fkey")
+  user            user     @relation(fields: [userId], references: [userId], map: "Business_userId_fkey")
+  review          review[]
 
-  business    Business?
-  reviews     Review[]
-  services    Service[]
-  items       Item[]
-  lodges      Lodge[]
-  rooms       Room[]
-  school      School    @relation(fields: [schoolId], references: [schoolId])
-  schoolId    Int
+  @@index([nearestSchoolId], map: "Business_nearestSchoolId_fkey")
 }
 
-model School {
-  schoolId   Int              @id @default(autoincrement())
-  schoolName String           @db.VarChar(255)
-  createdAt  DateTime         @default(now())
+model item {
+  itemId               Int           @id @default(autoincrement())
+  userId               Int
+  imagesUrlArrayString String        @db.Text
+  title                String
+  description          String        @db.LongText
+  price                Int
+  condition            String
+  category             String
+  numberInStock        Int
+  videoUrl             String?       @db.Text
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime
+  user                 user          @relation(fields: [userId], references: [userId], map: "Item_userId_fkey")
+  item_school          item_school[]
 
-  services   Service_School[]
-  items      Item_School[]
-  rooms      Room[]
-  lodges     Lodge[]
-  businesses Business[]
-  users      User[]
+  @@fulltext([description])
+  @@fulltext([description, title])
+  @@index([userId], map: "Item_userId_fkey")
 }
 
-model Service_School {
-  service    Service @relation(fields: [serviceId], references: [serviceId])
-  serviceId  Int
-  school     School  @relation(fields: [schoolId], references: [schoolId])
-  schoolId   Int
+model item_school {
+  itemId   Int
+  schoolId Int
+  item     item   @relation(fields: [itemId], references: [itemId], map: "Item_School_itemId_fkey")
+  school   school @relation(fields: [schoolId], references: [schoolId], map: "Item_School_schoolId_fkey")
 
-  @@id([serviceId, schoolId])
+  @@id([itemId, schoolId])
+  @@index([schoolId], map: "Item_School_schoolId_fkey")
 }
 
-model Service {
-  serviceId                 Int              @id @default(autoincrement())
-  user                      User             @relation(fields: [userId], references: [userId])
-  userId                    Int
-  imagesUrlArrayString      String           @db.Text
-  title                     String   
-  description               String           @db.LongText
-  price                     Int    
-  category                  String
-  online                    String           @default("")
-  inPerson                  String           @default("")
-  jsonStingifiedAvailabilty String
-  priceType                 String
-  videoUrl                  String           @db.Text
-  createdAt                 DateTime         @default(now())
-  updatedAt                 DateTime         @updatedAt
-
-  schools                   Service_School[]
-}
-
-model Room {
-  roomId                 Int              @id @default(autoincrement())
-  user                   User             @relation(fields: [userId], references: [userId])
+model lodge {
+  lodgeId                Int      @id @default(autoincrement())
   userId                 Int
-  school                 School          @relation(fields: [schoolId], references: [schoolId])
   schoolId               Int
-  imagesUrlArrayString   String           @db.Text
+  imagesUrlArrayString   String   @db.Text
+  propertyType           String
+  numberOfBedrooms       Int
+  numberOfBathrooms      Int
+  numberOfLodges         Int
+  paymentFrequency       String
+  price                  Int
+  agentFee               Int
+  priceType              String
+  location               String
+  nearestSchool          String
+  walkingTime            Int
+  kekeTime               Int
+  description            String   @db.LongText
+  WiFi                   Boolean  @default(false)
+  parking                Boolean  @default(false)
+  electricity            Boolean  @default(false)
+  water                  Boolean  @default(false)
+  electricityDescription String   @db.LongText
+  waterDescription       String   @db.LongText
+  networkQuality         String
+  networkDescription     String   @db.LongText
+  videoUrl               String?  @db.Text
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime
+  school                 school   @relation(fields: [schoolId], references: [schoolId], map: "Lodge_schoolId_fkey")
+  user                   user     @relation(fields: [userId], references: [userId], map: "Lodge_userId_fkey")
+
+  @@fulltext([description])
+  @@fulltext([description, propertyType])
+  @@index([schoolId], map: "Lodge_schoolId_fkey")
+  @@index([userId], map: "Lodge_userId_fkey")
+}
+
+model review {
+  reviewId      Int       @id @default(autoincrement())
+  userId        Int?
+  businessId    Int?
+  numberOfStars Int
+  description   String    @db.LongText
+  ownerUserId   Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  business      business? @relation(fields: [businessId], references: [businessId], map: "Review_businessId_fkey")
+  user          user?     @relation(fields: [userId], references: [userId], map: "Review_userId_fkey")
+
+  @@index([businessId], map: "Review_businessId_fkey")
+  @@index([userId], map: "Review_userId_fkey")
+}
+
+model room {
+  roomId                 Int      @id @default(autoincrement())
+  userId                 Int
+  schoolId               Int
+  imagesUrlArrayString   String   @db.Text
   propertyType           String
   numberOfBedrooms       Int
   numberOfBathrooms      Int
@@ -92,114 +130,95 @@ model Room {
   nearestSchool          String
   walkingTime            Int
   kekeTime               Int
-  description            String           @db.LongText
-  WiFi                   Boolean          @default(false)
-  parking                Boolean          @default(false)
-  electricity            Boolean          @default(false)
-  water                  Boolean          @default(false)
-  electricityDescription String           @db.LongText
-  waterDescription       String           @db.LongText
+  description            String   @db.LongText
+  WiFi                   Boolean  @default(false)
+  parking                Boolean  @default(false)
+  electricity            Boolean  @default(false)
+  water                  Boolean  @default(false)
+  electricityDescription String   @db.LongText
+  waterDescription       String   @db.LongText
   networkQuality         String
-  networkDescription     String           @db.LongText
+  networkDescription     String   @db.LongText
   ownerName              String
   ownerPhone             String
   ownerProgramme         String
   yearOfStudy            String
   dateOfBirth            String
-  additionalInfo         String?          @db.LongText
-  videoUrl               String?          @db.Text
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
+  additionalInfo         String?  @db.LongText
+  videoUrl               String?  @db.Text
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime
+  school                 school   @relation(fields: [schoolId], references: [schoolId], map: "Room_schoolId_fkey")
+  user                   user     @relation(fields: [userId], references: [userId], map: "Room_userId_fkey")
+
+  @@fulltext([description])
+  @@fulltext([description, propertyType])
+  @@index([schoolId], map: "Room_schoolId_fkey")
+  @@index([userId], map: "Room_userId_fkey")
 }
 
-model Lodge {
-  lodgeId                Int              @id @default(autoincrement())
-  user                   User             @relation(fields: [userId], references: [userId])
-  userId                 Int
-  school                 School           @relation(fields: [schoolId], references: [schoolId])
-  schoolId               Int
-  imagesUrlArrayString   String           @db.Text
-  propertyType           String
-  numberOfBedrooms       Int
-  numberOfBathrooms      Int
-  paymentFrequency       String
-  price                  Int
-  priceType              String
-  location               String
-  nearestSchool          String
-  walkingTime            Int
-  kekeTime               Int
-  description            String           @db.LongText
-  WiFi                   Boolean          @default(false)
-  parking                Boolean          @default(false)
-  electricity            Boolean          @default(false)
-  water                  Boolean          @default(false)
-  electricityDescription String           @db.LongText
-  waterDescription       String           @db.LongText
-  networkQuality         String
-  networkDescription     String           @db.LongText
-  videoUrl               String?          @db.Text
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
+model school {
+  schoolId       Int              @id @default(autoincrement())
+  schoolName     String           @unique(map: "School_schoolName_key") @db.VarChar(255)
+  createdAt      DateTime         @default(now())
+  business       business[]
+  item_school    item_school[]
+  lodge          lodge[]
+  room           room[]
+  service_school service_school[]
+  user           user[]
 }
 
-model Item_School {
-  item     Item    @relation(fields: [itemId], references: [itemId])
-  itemId   Int
-  school   School  @relation(fields: [schoolId], references: [schoolId])
-  schoolId Int
+model service {
+  serviceId                 Int              @id @default(autoincrement())
+  userId                    Int
+  imagesUrlArrayString      String           @db.Text
+  title                     String
+  description               String           @db.LongText
+  price                     Int
+  category                  String
+  online                    String           @default("")
+  inPerson                  String           @default("")
+  jsonStingifiedAvailabilty String
+  priceType                 String
+  videoUrl                  String?          @db.Text
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime
+  user                      user             @relation(fields: [userId], references: [userId], map: "Service_userId_fkey")
+  service_school            service_school[]
 
-  @@id([itemId, schoolId])
+  @@fulltext([description])
+  @@fulltext([description, title])
+  @@index([userId], map: "Service_userId_fkey")
 }
 
-model Item {
-  itemId                Int              @id @default(autoincrement())
-  user                  User             @relation(fields: [userId], references: [userId])
-  userId                Int
-  imagesUrlArrayString  String           @db.Text
-  title                 String
-  description           String           @db.LongText
-  price                 Int 
-  condition             String
-  category              String
-  numberInStock         Int
-  videoUrl              String?          @db.Text
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+model service_school {
+  serviceId Int
+  schoolId  Int
+  school    school  @relation(fields: [schoolId], references: [schoolId], map: "Service_School_schoolId_fkey")
+  service   service @relation(fields: [serviceId], references: [serviceId], map: "Service_School_serviceId_fkey")
 
-  schools               Item_School[]
+  @@id([serviceId, schoolId])
+  @@index([schoolId], map: "Service_School_schoolId_fkey")
 }
 
-model Business {
-  businessId            Int              @id @default(autoincrement())
-  user                  User             @relation(fields: [userId], references: [userId])
-  userId                Int              @unique
-  firstName             String
-  lastName              String
-  businessName          String
-  address               String
-  nearestSchool         School           @relation(fields: [nearestSchoolId], references: [schoolId])
-  nearestSchoolId       Int
-  phoneNumber           String
-  businessEmail         String
-  description           String           @db.LongText
-  photoUrl              String?          @db.VarChar(255)
-  coverPhotoUrl         String?          @db.VarChar(255)
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+model user {
+  userId      Int       @id @default(autoincrement())
+  username    String    @unique(map: "User_username_key") @db.VarChar(255)
+  email       String    @unique(map: "User_email_key") @db.VarChar(255)
+  password    String    @db.VarChar(255)
+  photoUrl    String?   @db.VarChar(255)
+  phoneNumber String    @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  schoolId    Int
+  business    business?
+  item        item[]
+  lodge       lodge[]
+  review      review[]
+  room        room[]
+  service     service[]
+  school      school    @relation(fields: [schoolId], references: [schoolId], map: "User_schoolId_fkey")
 
-  reviews               Review[]
-}
-
-model Review {
-  reviewId              Int              @id @default(autoincrement())
-  user                  User             @relation(fields: [userId], references: [userId])
-  userId                Int
-  business              Business         @relation(fields: [businessId], references: [businessId])
-  businessId            Int
-  numberOfStars         Int
-  description           String           @db.LongText
-  ownerUserId           Int
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
+  @@index([schoolId], map: "User_schoolId_fkey")
 }

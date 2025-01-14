@@ -1,7 +1,7 @@
 import express from "express"
 import { authorization } from "../utils/authorization"
 import asyncHandler from "express-async-handler"
-import { delete_lodge, edit_lodge, get_a_lodge, get_all_lodges, list_lodge } from "../controllers/lodgeControllers"
+import { delete_lodge, edit_lodge, get_a_lodge, get_all_lodges, list_lodge } from "../controllers/lodgeController"
 
 const router = express.Router()
 

@@ -1,9 +1,6 @@
 import jwt from "jsonwebtoken"
 import { Request, Response, NextFunction } from "express"
 import { User } from "../models/user"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
 
 export const giveAuthorization = async  (req: Request, res: Response, next: NextFunction): Promise<any> => {
     const cookieName = 'access_token';
@@ -17,7 +14,7 @@ export const giveAuthorization = async  (req: Request, res: Response, next: Next
     const decodedToken = jwt.verify(cookieValue, tokenSecret! )
     const email = JSON.parse(JSON.stringify(decodedToken)).email
 
-    const user = await prisma.user.findUnique({ where: { email: email } } )
+    const user = await User.findOne({ where: { email: email } } )
 
     if (!user) {
       return res.status(401).json('Invalid token')

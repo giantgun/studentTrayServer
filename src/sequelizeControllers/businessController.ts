@@ -1,7 +1,12 @@
-import { NextFunction, Request, Response } from "express"
-import { PrismaClient } from "@prisma/client"
-
-const prisma  = new PrismaClient()
+import { NextFunction, Request, Response } from "express";
+import { Business } from "../models/business";
+import { FindOptions, InferAttributes } from "@sequelize/core";
+import { Review } from "../models/reviews";
+import { User } from "../models/user";
+import { Item } from "../models/item";
+import { Service } from "../models/service";
+import { Lodge } from "../models/lodge";
+import { Room } from "../models/room";
 
 export async function register_business(req: Request, res: Response): Promise<any>{
     const {
@@ -30,39 +35,26 @@ export async function register_business(req: Request, res: Response): Promise<an
         return res.status(400).json("Invalid input.")
     }
 
-    const school = await prisma.school.findUnique({ where: {schoolName: nearestSchool} })
-
-    if(!school){
-        return res.status(400).json("Invalid input.")
-    }
-
-    const currentDate = new Date()
-    await prisma.business.create({
-        data: {
-            businessName: businessName,
-            address: address,
-            businessEmail: businessEmail,
-            phoneNumber: phoneNumber,
-            description: description,
-            firstName: firstName,
-            lastName: lastName,
-            updatedAt: currentDate,
-            nearestSchoolId: school?.schoolId,
-            userId: userId
-        }
+    const newBusiness = new Business({
+        businessName: businessName,
+        address: address,
+        businessEmail: businessEmail,
+        phoneNumber: phoneNumber,
+        nearestSchool: nearestSchool,
+        description: description,
+        userId: userId,
+        firstName: firstName,
+        lastName: lastName
     })
+    await newBusiness.save()
 
-    const business = await prisma.business.findUnique({ 
-        where: { userId: userId },
-        include: {
-            school: true
-        }
-    })
+    const business = await Business.findOne( { where: { userId: userId } } as FindOptions<InferAttributes<Business, { omit: never; }>> )
 
     return res.status(200).json({
         user: {
             username: user.username,
             school: user.school,
+            dateOfBirth: user.dateOfBirth,
             photoUrl: user.photoUrl,
         },
         business: {
@@ -70,7 +62,7 @@ export async function register_business(req: Request, res: Response): Promise<an
             address: business!.address,
             businessEmail: business!.businessEmail,
             phoneNumber: business!.phoneNumber,
-            nearestSchool: business!.school.schoolName,
+            nearestSchool: business!.nearestSchool,
             description: business!.description,
             dateJoined: business!.createdAt
         }
@@ -100,24 +92,16 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
         return res.status(400).json("Invalid input.")
     }
 
-    const business = await prisma.business.update({ 
-        where: { userId: userId },
-        data: {        
-            businessName: businessName,
-            address: address,
-            businessEmail: businessEmail,
-            phoneNumber: phoneNumber,
-            description: description,
-            school: {
-                connect: {
-                    schoolName: nearestSchool
-                }
-            }
-        },
-        include: {
-            school: true
-        }
-    })
+    const business = await Business.findOne( { where: { userId: userId } } as FindOptions<InferAttributes<Business, { omit: never; }>> )
+
+    business!.businessName = businessName
+    business!.address = address
+    business!.businessEmail = businessEmail
+    business!.phoneNumber = phoneNumber
+    business!.nearestSchool = nearestSchool
+    business!.description = description
+
+    await business?.save()
 
     return res.status(200).json({
         user: {
@@ -131,7 +115,7 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
             address: business!.address,
             businessEmail: business!.businessEmail,
             phoneNumber: business!.phoneNumber,
-            nearestSchool: business!.school.schoolName,
+            nearestSchool: business!.nearestSchool,
             description: business!.description,
             dateJoined: business!.createdAt
         }
@@ -140,35 +124,27 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
 
 export async function get__business_public(req: Request, res: Response): Promise<any> {
     const businessId = Number(req.params.businessId)
+    const loggedInUserSchool = req.user.dataValues.school
 
-    const reviews = await prisma.review.findMany({where: { businessId: businessId, }})
-    const business = await prisma.business.findUnique({
-        where: { businessId: businessId, },
-        include: {
-            school: true
-        }
-    })
+    const reviews = await Review.findAll({where: { businessId: businessId, }})
+    const business = await Business.findByPk(businessId)
 
     if(!business){
         return res.status(400).json("Business does not exist")
     }
 
-    const user = await prisma.user.findUnique({
-        where: { userId: business.userId },
-        include: {
-            item: true,
-            lodge: true,
-            service: true,
-            room: true
-        }
-    })
+    const user = await User.findByPk(business?.userId)
+    const items = await Item.findAll({where: { userId: user?.userId, school: loggedInUserSchool }})
+    const services = await Service.findAll({where: { userId: user?.userId, school: loggedInUserSchool }})
+    const lodges = await Lodge.findAll({where: { userId: user?.userId, nearestSchool: loggedInUserSchool }})
+    const rooms = await Room.findAll({where: { userId: user?.userId, nearestSchool: loggedInUserSchool }})
 
     let businessReviews = []
 
     for (let i = 0; i < reviews.length ; i++){
-        const owner = await prisma.user.findUnique({ where: { userId: reviews[i].ownerUserId } })
+        const owner = await User.findByPk(reviews[i].dataValues.ownerUserId)
         const review = {
-            ...reviews[i],
+            ...reviews[i].dataValues,
             ownerPhotoUrl: owner?.photoUrl,
             username: owner?.username,
         }
@@ -178,7 +154,7 @@ export async function get__business_public(req: Request, res: Response): Promise
     return res.json({
         businessName: business?.businessName,
         businessEmail: business?.businessEmail,
-        nearestSchool: business?.school.schoolName,
+        nearestSchool: business?.nearestSchool,
         photoUrl: business?.photoUrl,
         coverPhotoUrl: business?.coverPhotoUrl,
         businessId: business?.businessId,
@@ -186,10 +162,10 @@ export async function get__business_public(req: Request, res: Response): Promise
         dateJoined: business?.createdAt,
         description: business?.description,
         reviews: businessReviews,
-        items: user!.item,
-        services: user!.service,
-        lodges: user!.lodge,
-        rooms: user!.room
+        items: items,
+        services: services,
+        lodges: lodges,
+        rooms: rooms
     })
 
 
@@ -199,25 +175,24 @@ export async function get__business_private(req: Request, res: Response): Promis
     const userId = req.user.userId
     const user= req.user
 
-    const business = await prisma.business.findUnique({
-        where: { userId: userId, },
-        include: {
-            school: true,
-            review: true
-        }
-    })
+    const business = await Business.findOne({where: { userId: userId }})
 
     if(!business){
         return res.status(400).json("Business does not exist")
     }
 
-
+    const reviews = await Review.findAll({where: { businessId: business?.businessId }})
+    const items = await Item.findAll({where: { userId: user?.userId }})
+    const services = await Service.findAll({where: { userId: user?.userId }})
+    const lodges = await Lodge.findAll({where: { userId: user?.userId }})
+    const rooms = await Room.findAll({where: { userId: user?.userId }})
+    
     let businessReviews = []
 
-    for (let i = 0; i < business.review.length ; i++){
-        const owner = await prisma.user.findUnique({ where: { userId: business.review[i].ownerUserId } })
+    for (let i = 0; i < reviews.length ; i++){
+        const owner = await User.findByPk(reviews[i].dataValues.ownerUserId)
         const review = {
-            ...business.review[i],
+            ...reviews[i].dataValues,
             ownerPhotoUrl: owner?.photoUrl,
             username: owner?.username,
         }
@@ -228,7 +203,7 @@ export async function get__business_private(req: Request, res: Response): Promis
     return res.json({
         businessName: business?.businessName,
         businessEmail: business?.businessEmail,
-        nearestSchool: business?.school.schoolName,
+        nearestSchool: business?.nearestSchool,
         photoUrl: business?.photoUrl,
         coverPhotoUrl: business?.coverPhotoUrl,
         businessId: business?.businessId,
@@ -236,10 +211,10 @@ export async function get__business_private(req: Request, res: Response): Promis
         dateJoined: business?.createdAt,
         description: business?.description,
         reviews: businessReviews,
-        items: user!.item,
-        services: user!.service,
-        lodges: user!.lodge,
-        rooms: user!.room
+        items: items,
+        services: services,
+        lodges: lodges,
+        rooms: rooms
     })
 
 
@@ -248,9 +223,9 @@ export async function get__business_private(req: Request, res: Response): Promis
 export async function get_business_photo_url_for_overwrite(req: Request, res: Response, next: NextFunction){
     const user = req.user
 
-    const business = await prisma.business.findUnique( { where: { userId: user.userId } } )
+    const business = await Business.findOne( { where: { userId: user.userId } } )
 
-    req.urlToOverwrite = business?.photoUrl as string
+    req.urlToOverwrite = business?.photoUrl
     next()
 }
 
@@ -258,12 +233,10 @@ export async function save_business_photo_url(req: Request, res: Response): Prom
     const user = req.user
     const { photoUrl } = req.body
 
-    await prisma.business.update({ 
-        where: { userId: user.userId },
-        data: {
-            photoUrl: photoUrl
-        }
-    })
+    const business = await Business.findOne( { where: { userId: user.userId } } )
+
+    business!.photoUrl = photoUrl
+    await business!.save()
 
     return res.json("Upload succesful.")
 }
@@ -271,9 +244,9 @@ export async function save_business_photo_url(req: Request, res: Response): Prom
 export async function get_business_cover_photo_url_for_overwrite(req: Request, res: Response, next: NextFunction){
     const user = req.user
 
-    const business = await prisma.business.findUnique( { where: { userId: user.userId } } )
+    const business = await Business.findOne( { where: { userId: user.userId } } )
 
-    req.urlToOverwrite = business?.coverPhotoUrl as string
+    req.urlToOverwrite = business?.coverPhotoUrl
     next()
 }
 
@@ -281,12 +254,10 @@ export async function save_business_cover_photo_url(req: Request, res: Response)
     const user = req.user
     const { coverPhotoUrl } = req.body
 
-    await prisma.business.update({ 
-        where: { userId: user.userId },
-        data: {
-            coverPhotoUrl: coverPhotoUrl
-        }
-    })
+    const business = await Business.findOne( { where: { userId: user.userId } } )
+
+    business!.coverPhotoUrl = coverPhotoUrl
+    await business!.save()
 
     return res.json("Upload succesful.")
 }

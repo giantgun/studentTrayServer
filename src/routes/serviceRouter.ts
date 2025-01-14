@@ -9,6 +9,7 @@ import {
     list_service, 
 } from "../controllers/serviceController"
 
+
 const router = express.Router()
 
 router.get("/", asyncHandler(authorization), asyncHandler(get_all_services))

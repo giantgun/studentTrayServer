@@ -1,8 +1,7 @@
-import { Request, Response, NextFunction } from "express";
-import { Room } from "../models/room";
-import { Business } from "../models/business";
-import { User } from "../models/user";
-import { Op } from "@sequelize/core";
+import { Request, Response } from "express"
+import { PrismaClient } from "@prisma/client"
+
+const prisma  = new PrismaClient()
 
 export async function list_room(req: Request, res: Response): Promise<any> {
     const {
@@ -58,39 +57,48 @@ export async function list_room(req: Request, res: Response): Promise<any> {
     }
 
     const userId = req.user.userId
+    const currentDate = new Date()
 
-    const newRoom = new Room({
-        imagesUrlArrayString: imagesUrlArrayString,
-        propertyType: propertyType,
-        numberOfBedrooms: numberOfBedrooms,
-        numberOfBathrooms: numberOfBathrooms,
-        paymentFrequency: paymentFrequency,
-        price: price,
-        priceType: priceType,
-        location: location,
-        nearestSchool: school,
-        walkingTime: walkingTime,
-        kekeTime: kekeTime,
-        description: description,
-        WiFi: WiFi,
-        parking: parking,
-        electricity: electricity,
-        water: water,
-        electricityDescription: electricityDescription,
-        waterDescription: waterDescription,
-        networkQuality: networkQuality,
-        networkDescription: networkDescription,
-        ownerName: ownerName,
-        ownerPhone: ownerPhone,
-        ownerProgramme: ownerProgramme,
-        yearOfStudy: yearOfStudy,
-        dateOfBirth: dateOfBirth,
-        additionalInfo: additionalInfo,
-        userId: userId,
-        videoUrl,
+    await prisma.room.create({
+        data: {
+            imagesUrlArrayString: imagesUrlArrayString,
+            propertyType: propertyType,
+            numberOfBedrooms: numberOfBedrooms,
+            numberOfBathrooms: numberOfBathrooms,
+            paymentFrequency: paymentFrequency,
+            price: price,
+            priceType: priceType,
+            location: location,
+            nearestSchool: school,
+            walkingTime: walkingTime,
+            kekeTime: kekeTime,
+            description: description,
+            WiFi: WiFi,
+            parking: parking,
+            electricity: electricity,
+            water: water,
+            electricityDescription: electricityDescription,
+            waterDescription: waterDescription,
+            networkQuality: networkQuality,
+            networkDescription: networkDescription,
+            ownerName: ownerName,
+            ownerPhone: ownerPhone,
+            ownerProgramme: ownerProgramme,
+            yearOfStudy: yearOfStudy,
+            dateOfBirth: dateOfBirth,
+            additionalInfo: additionalInfo,
+            userId: userId,
+            user: req.user,
+            videoUrl,
+            updatedAt: currentDate,
+            school: {
+                connect:{
+                    schoolName: school
+                }
+            }
+        }
     })
 
-    await newRoom.save()
     return res.status(200).json("The Room has been listed.")
 }
 
@@ -98,42 +106,65 @@ export async function get_all_rooms(req: Request, res: Response): Promise<any>{
   const user = req.user
   const searchedText = req.query.search
   if(searchedText){
-    const rooms = await Room.findAll({
-        where: {
-        propertyType: { [Op.like]: `%${searchedText}%` },
-        nearestSchool: user.school
+    const rooms = await prisma.room.findMany({
+        where: { 
+            OR:[
+                { propertyType: {search: `%${searchedText}%`} },
+                { description: {search: `%${searchedText}%`} },
+            ],
+            schoolId: user.school.schoolId
         },
-    })
+      })
     return res.status(200).json(rooms)
-    }
-  const allRooms = await Room.findAll({where: { nearestSchool: user.school }})
+  }
+  const allRooms = await prisma.room.findMany({ where: { schoolId: user.school.schoolId } })
   return res.status(200).json(allRooms)
 }
 
 export async function get_a_room(req: Request, res: Response): Promise<any>{
     const user = req.user
-    const roomId = req.params.roomId
+    const roomId = Number(req.params.roomId)
 
-    const room= await Room.findOne({where: { nearestSchool: user.school, roomId: roomId }})
-    const business = await Business.findOne({where: { userId: room?.userId }})
+    const room = await prisma.room.findUnique({ 
+        where: { 
+            roomId: roomId,
+            schoolId: user.school.schoolId
+        },
+    })
+
+    if(!room){
+        return res.status(400).json("Room does not exist.")
+    }
+
+    const business = await prisma.business.findUnique({ where: { userId: room.userId }})
     if(business){
         return res.status(200).json({
-            ...room?.dataValues,
+            ...room,
+            phoneNumber: business.phoneNumber,
+            business: true
         })
     }
-    const owner = await User.findOne({ where: {userId: room?.userId} })
+    const owner = await prisma.user.findUnique({ where: {userId: room?.userId} })
 
     return res.status(200).json({
-        ...room?.dataValues,
-        phoneNumber: owner?.phoneNumber
+        ...room,
+        phoneNumber: owner?.phoneNumber,
+        user: true
     })
 }
 
 export async function delete_room(req: Request, res: Response): Promise<any>{
     const user = req.user
-    const roomId = req.params.roomId
+    const roomId = Number(req.params.roomId)
 
-    await Room.destroy({where: { userId: user.userId, roomId: roomId }})
+    const oldRoom = await prisma.room.findFirst({ where: { roomId: roomId, userId: user.userId  } })
+        
+    if(!oldRoom){
+        return res.status(400).json("Unauthorized.")
+    }
+
+    
+    await prisma.room.delete({ where: { roomId: roomId, userId: user.userId  } })
 
     return res.status(200).json("The room has been deleted successfully.")
 }
@@ -191,41 +222,44 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
     }
 
     const user = req.user
-    const roomId = req.params.roomId
+    const roomId = Number(req.params.roomId)
 
-    const room = await Room.findOne({where: { userId: user.userId, roomId: roomId }})
+    const room = await prisma.room.findFirst({where: { userId: user.userId, roomId: roomId }})
 
     if(!room){
         return res.status(400).json("invalid input.")
     }
 
-    room!.imagesUrlArrayString = imagesUrlArrayString
-    room!.propertyType = propertyType
-    room!.numberOfBedrooms = numberOfBedrooms
-    room!.numberOfBathrooms = numberOfBathrooms
-    room!.paymentFrequency = paymentFrequency
-    room!.price = price
-    room!.priceType = priceType
-    room!.location = location
-    room!.nearestSchool = school
-    room!.walkingTime = walkingTime
-    room!.kekeTime = kekeTime
-    room!.description = description
-    room!.WiFi = WiFi
-    room!.parking = parking
-    room!.electricity = electricity
-    room!.water = water
-    room!.electricityDescription = electricityDescription
-    room!.waterDescription = waterDescription
-    room!.networkQuality = networkQuality
-    room!.networkDescription = networkDescription
-    room!.ownerName = ownerName
-    room!.ownerPhone = ownerPhone
-    room!.ownerProgramme = ownerProgramme
-    room!.yearOfStudy = yearOfStudy
-    room!.dateOfBirth = dateOfBirth
-    room!.additionalInfo = additionalInfo
+    await prisma.room.update({
+        where: { userId: user.userId, roomId: roomId },
+            data: {
+                propertyType,
+                numberOfBedrooms,
+                numberOfBathrooms,
+                paymentFrequency,
+                price,
+                priceType,
+                location,
+                school,
+                walkingTime,
+                kekeTime,
+                description,
+                WiFi,
+                parking,
+                electricity,
+                water,
+                electricityDescription,
+                waterDescription,
+                networkQuality,
+                networkDescription,
+                ownerName,
+                ownerPhone,
+                ownerProgramme,
+                yearOfStudy,
+                dateOfBirth,
+                additionalInfo
+            }
+    })
 
-    await room!.save()
     return res.status(200).json("The Room has been listed.")
 }
