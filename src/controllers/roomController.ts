@@ -1,4 +1,4 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import { PrismaClient } from "@prisma/client"
 
 const prisma  = new PrismaClient()
@@ -63,15 +63,15 @@ export async function list_room(req: Request, res: Response): Promise<any> {
         data: {
             imagesUrlArrayString: imagesUrlArrayString,
             propertyType: propertyType,
-            numberOfBedrooms: numberOfBedrooms,
-            numberOfBathrooms: numberOfBathrooms,
+            numberOfBedrooms: Number(numberOfBedrooms),
+            numberOfBathrooms: Number(numberOfBathrooms),
             paymentFrequency: paymentFrequency,
-            price: price,
+            price: Number(price),
             priceType: priceType,
             location: location,
             nearestSchool: school,
-            walkingTime: walkingTime,
-            kekeTime: kekeTime,
+            walkingTime: Number(walkingTime),
+            kekeTime: Number(kekeTime),
             description: description,
             WiFi: WiFi,
             parking: parking,
@@ -87,10 +87,13 @@ export async function list_room(req: Request, res: Response): Promise<any> {
             yearOfStudy: yearOfStudy,
             dateOfBirth: dateOfBirth,
             additionalInfo: additionalInfo,
-            userId: userId,
-            user: req.user,
             videoUrl,
             updatedAt: currentDate,
+            user: {
+                connect: {
+                    userId: userId
+                }
+            },
             school: {
                 connect:{
                     schoolName: school
@@ -215,8 +218,7 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
         !ownerProgramme ||
         !yearOfStudy ||
         !dateOfBirth ||
-        !additionalInfo ||
-        !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
+        !additionalInfo
     ){
         return res.status(400).json("Invalid input.")
     }
@@ -240,9 +242,8 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
                 price,
                 priceType,
                 location,
-                school,
-                walkingTime,
-                kekeTime,
+                walkingTime: Number(walkingTime),
+                kekeTime: Number(kekeTime),
                 description,
                 WiFi,
                 parking,
@@ -257,9 +258,112 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
                 ownerProgramme,
                 yearOfStudy,
                 dateOfBirth,
-                additionalInfo
+                additionalInfo,
+                school: {
+                    connect: {
+                        schoolName: school
+                    }
+                },
             }
     })
 
-    return res.status(200).json("The Room has been listed.")
+    return res.status(200).json("The Room has been edited.")
+}
+
+export async function get_a_room_for_edit(req: Request, res: Response): Promise<any>{
+    const roomId = Number(req.params.roomId)
+
+    const room = await prisma.room.findUnique({ 
+        where: { roomId: roomId },
+        include: {
+            school: true
+        }
+    })
+
+    return res.status(200).json(room)
+}
+
+export async function get_room_image_url_for_overwrite(req: Request, res: Response, next: NextFunction): Promise<any>{
+    const user = req.user
+    const roomId = Number(req.params.roomId)
+    const selectedIndex = req.params.selectedIndex
+
+    const rooms = user.room
+
+    function getImagesUrlArrayString(){
+        for (let i = 0; i < rooms.length ; i++){
+            if(rooms[i].roomId === roomId){
+                return rooms[i].imagesUrlArrayString
+            }
+        }
+        return null
+    }
+    
+    let imagesUrlArrayString = getImagesUrlArrayString()
+
+    if(!imagesUrlArrayString){
+        return res.status(403).json("forbidden")
+    }
+
+    let imagesUrlArray = imagesUrlArrayString.split(",") 
+
+    req.urlToOverwrite = imagesUrlArray[selectedIndex]
+    next()
+}
+
+export async function save_room_image_url(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const roomId = Number(req.params.roomId)
+    const selectedIndex = req.params.selectedIndex
+    const { imageUrl } = req.body
+
+    const rooms = user.room
+    function getImagesUrlArrayString(){
+        for (let i = 0; i < rooms.length ; i++){
+            if(rooms[i].roomId === roomId){
+                return rooms[i].imagesUrlArrayString
+            }
+        }
+        return null
+    }
+
+    let imagesUrlArrayString = getImagesUrlArrayString()
+
+    if(!imagesUrlArrayString){
+        return res.status(403).json("Unauthorized")
+    }
+
+    let imagesUrlArray = imagesUrlArrayString.split(",")
+    imagesUrlArray[selectedIndex] = imageUrl
+
+    imagesUrlArrayString = imagesUrlArray.toString()
+
+    await prisma.room.update({ 
+        where: { 
+            userId: user.userId,
+            roomId: Number(roomId)
+        },
+        data: {
+            imagesUrlArrayString: imagesUrlArrayString
+        }
+    })
+
+    return res.json("Upload succesful.")
+}
+
+export async function get_room_images_url_for_delete(req: Request, res: Response, next: NextFunction): Promise<any>{
+    const user = req.user
+    const roomId = Number(req.params.roomId)
+
+    if(!roomId ||!Number.isInteger(roomId) ){
+        return res.status(400).json("Invalid Input.")
+    }
+
+    const oldroom = await prisma.room.findFirst({ where: { roomId: roomId, userId: user.userId  } })
+    
+    if(!oldroom){
+        return res.status(400).json("Item has been deleted, or never existed.")
+    }
+    req.urlArrayToDelete = oldroom.imagesUrlArrayString.split(",")
+    next()
 }

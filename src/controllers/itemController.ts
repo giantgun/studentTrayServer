@@ -44,16 +44,15 @@ export async function list_item(req: Request, res: Response): Promise<any>{
     const currentDate = new Date()
     await prisma.item.create({
         data: {
-            user: req.user,
             videoUrl,
             imagesUrlArrayString,
             title,
             description,
-            price,
+            price: Number(price),
             condition,
             category,
             userId,
-            numberInStock,
+            numberInStock: Number(numberInStock),
             updatedAt: currentDate,
             item_school: {
                 create: saveSchools
@@ -70,8 +69,8 @@ export async function get_all_items(req: Request, res: Response): Promise<any>{
       const items= await prisma.item.findMany({
         where: { 
             OR:[
-                { title: {search: `%${searchedText}%`}},
-                { description: {search: `%${searchedText}%`}},
+                { title: {contains: `%${searchedText}%`}},
+                { description: {contains: `%${searchedText}%`}},
             ],
             item_school: {
                 some:{
@@ -136,10 +135,10 @@ export async function delete_item(req: Request, res: Response): Promise<any>{
         return res.status(400).json("Unauthorized.")
     }
 
-    const deleteItemSchoolRecord = await prisma.item_school.deleteMany({ where: { itemId: itemId } })
-    const deleteItem = await prisma.item.deleteMany({ where: { itemId: itemId, userId: user.userId  } })
+    const deleteItemSchoolRecord = prisma.item_school.deleteMany({ where: { itemId: itemId } })
+    const deleteItem = prisma.item.deleteMany({ where: { itemId: itemId, userId: user.userId  } })
 
-    await prisma.$transaction([deleteItemSchoolRecord, deleteItem] as any) 
+    await prisma.$transaction([deleteItemSchoolRecord, deleteItem]) 
 
     return res.status(200).json("The item has been deleted successfully.")
 }
@@ -148,7 +147,7 @@ export async function get_item_images_url_for_delete(req: Request, res: Response
     const user = req.user
     const itemId = Number(req.params.itemId)
 
-    if(!itemId || Number.isInteger(itemId) ){
+    if(!itemId ||!Number.isInteger(itemId) ){
         return res.status(400).json("Invalid Input.")
     }
 
@@ -195,7 +194,7 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
         return res.status(400).json("Item does not exist.")
     }
 
-    const deleteItemSchoolRecord = await prisma.item_school.deleteMany({ where: { itemId: itemId } })
+    const deleteItemSchoolRecord = prisma.item_school.deleteMany({ where: { itemId: itemId } })
 
     const saveSchools = schoolArray.map((school: string) => (
         {
@@ -207,7 +206,7 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
         }
     ))
     const currentDate = new Date()
-    const editItem = await prisma.item.update({
+    const editItem = prisma.item.update({
         where:{
         itemId: itemId,
         userId: userId
@@ -215,10 +214,10 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
         data: {
             title: title,
             description: description,
-            price: price,
+            price: Number(price),
             category: category,
             condition: condition,
-            numberInStock: numberInStock,
+            numberInStock: Number(numberInStock),
             userId,
             updatedAt: currentDate,
             item_school: {
@@ -233,13 +232,16 @@ export async function edit_item(req: Request, res: Response): Promise<any>{
 }
 
 export async function get_an_item_for_edit(req: Request, res: Response): Promise<any>{
-    const user = req.user
     const itemId = Number(req.params.itemId)
 
     const item = await prisma.item.findUnique({ 
         where: { itemId: itemId },
         include: {
-            item_school: true
+            item_school: {
+                include: {
+                    school: true
+                }
+            }
         }
     })
 
@@ -248,4 +250,74 @@ export async function get_an_item_for_edit(req: Request, res: Response): Promise
     }
 
     return res.status(200).json(item)
+}
+
+export async function get_item_image_url_for_overwrite(req: Request, res: Response, next: NextFunction): Promise<any>{
+    const user = req.user
+    const itemId = Number(req.params.itemId)
+    const selectedIndex = req.params.selectedIndex
+
+    const items = user.item
+    console.log(itemId)
+    console.log(items)
+    function getImagesUrlArrayString(){
+        for (let i = 0; i < items.length ; i++){
+            if(items[i].itemId === itemId){
+                return items[i].imagesUrlArrayString
+            }
+        }
+        return null
+    }
+    
+    let imagesUrlArrayString = getImagesUrlArrayString()
+    console.log(imagesUrlArrayString)
+
+    if(!imagesUrlArrayString){
+        return res.status(403).json("forbidden")
+    }
+
+    let imagesUrlArray = imagesUrlArrayString.split(",") 
+
+    req.urlToOverwrite = imagesUrlArray[selectedIndex]
+    next()
+}
+
+export async function save_item_image_url(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const itemId = Number(req.params.itemId)
+    const selectedIndex = req.params.selectedIndex
+    const { imageUrl } = req.body
+
+    const items = user.item
+    function getImagesUrlArrayString(){
+        for (let i = 0; i < items.length ; i++){
+            if(items[i].itemId === itemId){
+                return items[i].imagesUrlArrayString
+            }
+        }
+        return null
+    }
+
+    let imagesUrlArrayString = getImagesUrlArrayString()
+
+    if(!imagesUrlArrayString){
+        return res.status(401).json("Unauthorized")
+    }
+
+    let imagesUrlArray = imagesUrlArrayString.split(",")
+    imagesUrlArray[selectedIndex] = imageUrl
+
+    imagesUrlArrayString = imagesUrlArray.toString()
+
+    await prisma.item.update({ 
+        where: { 
+            userId: user.userId,
+            itemId: Number(itemId)
+        },
+        data: {
+            imagesUrlArrayString: imagesUrlArrayString
+        }
+    })
+
+    return res.json("Upload succesful.")
 }

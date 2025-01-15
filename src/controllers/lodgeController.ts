@@ -1,13 +1,13 @@
 import { PrismaClient } from "@prisma/client"
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 
 const prisma  = new PrismaClient()
 
 export async function list_lodge(req: Request, res: Response): Promise<any>{
     const {
         propertyType,
-        numberOfBedlodges,
-        numberOfBathlodges,
+        numberOfBedrooms,
+        numberOfBathrooms,
         paymentFrequency,
         price,
         priceType,
@@ -24,7 +24,6 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         waterDescription,
         networkQuality,
         networkDescription,
-        phoneNumber,
         imagesUrlArrayString,
         numberOfLodges,
         agentFee,
@@ -45,7 +44,6 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         !agentFee ||
         !description || 
         !networkQuality || 
-        !phoneNumber || phoneNumber >= 9999999999 ||
         !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
     ){
         return res.status(400).json("Invalid input.")
@@ -55,15 +53,15 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
     await prisma.lodge.create({
       data: {
         propertyType: propertyType,
-        numberOfBedrooms: numberOfBedlodges,
-        numberOfBathrooms: numberOfBathlodges,
+        numberOfBedrooms: Number(numberOfBedrooms),
+        numberOfBathrooms: Number(numberOfBathrooms),
         paymentFrequency: paymentFrequency,
-        price: price,
+        price: Number(price),
         priceType: priceType,
         location: location,
         nearestSchool: nearestSchool,
-        walkingTime: walkingTime,
-        kekeTime: kekeTime,
+        walkingTime: Number(walkingTime),
+        kekeTime: Number(kekeTime),
         description: description,
         WiFi: WiFi,
         parking: parking,
@@ -73,13 +71,16 @@ export async function list_lodge(req: Request, res: Response): Promise<any>{
         waterDescription: waterDescription,
         networkQuality: networkQuality,
         networkDescription: networkDescription,
-        userId: userId,
-        numberOfLodges,
+        numberOfLodges: Number(numberOfLodges),
         imagesUrlArrayString: imagesUrlArrayString,
-        agentFee: agentFee,
+        agentFee: Number(agentFee),
         videoUrl,
         updatedAt: currentDate,
-        user: req.user,
+        user: {
+            connect:{
+                userId: userId
+            }
+        },
         school: {
             connect:{
                 schoolName: nearestSchool
@@ -97,8 +98,8 @@ export async function get_all_lodges(req: Request, res: Response): Promise<any>{
       const lodges = await prisma.lodge.findMany({
           where: { 
               OR:[
-                  { propertyType: {search: `%${searchedText}%`} },
-                  { description: {search: `%${searchedText}%`} },
+                  { propertyType: {contains: `%${searchedText}%`} },
+                  { description: {contains: `%${searchedText}%`} },
               ],
               schoolId: user.school.schoolId
           },
@@ -177,8 +178,6 @@ export async function edit_lodge(req: Request, res: Response): Promise<any>{
       waterDescription,
       networkQuality,
       networkDescription,
-      phoneNumber,
-      imagesUrlArrayString,
       numberOfLodges,
       agentFee
     } = req.body
@@ -195,9 +194,7 @@ export async function edit_lodge(req: Request, res: Response): Promise<any>{
       !kekeTime ||
       !agentFee ||
       !description || 
-      !networkQuality || 
-      !phoneNumber || phoneNumber >= 9999999999 ||
-      !imagesUrlArrayString || imagesUrlArrayString.split(",").length <= 1
+      !networkQuality
   ){
       return res.status(400).json("Invalid input.")
   }
@@ -218,12 +215,12 @@ export async function edit_lodge(req: Request, res: Response): Promise<any>{
             numberOfBedrooms: numberOfBedrooms,
             numberOfBathrooms: numberOfBathrooms,
             paymentFrequency: paymentFrequency,
-            price: price,
+            price: Number(price),
             priceType: priceType,
             location: location,
             nearestSchool: nearestSchool,
-            walkingTime: walkingTime,
-            kekeTime: kekeTime,
+            walkingTime: Number(walkingTime),
+            kekeTime: Number(kekeTime),
             description: description,
             WiFi: WiFi,
             parking: parking,
@@ -234,11 +231,108 @@ export async function edit_lodge(req: Request, res: Response): Promise<any>{
             networkQuality: networkQuality,
             networkDescription: networkDescription,
             userId: user.userId,
-            numberOfLodges: numberOfLodges,
-            imagesUrlArrayString: imagesUrlArrayString,
-            agentFee: agentFee,
+            numberOfLodges: Number(numberOfLodges),
+            agentFee: Number(agentFee),
         }
     })
 
   return res.status(200).json("The lodge has been edited.")
+}
+
+export async function get_a_lodge_for_edit(req: Request, res: Response): Promise<any>{
+    const lodgeId = Number(req.params.lodgeId)
+
+    const lodge = await prisma.lodge.findUnique({ 
+        where: { lodgeId: lodgeId },
+        include: {
+            school: true
+        }
+    })
+
+    return res.status(200).json(lodge)
+}
+
+export async function get_lodge_image_url_for_overwrite(req: Request, res: Response, next: NextFunction): Promise<any>{
+    const user = req.user
+    const lodgeId = Number(req.params.lodgeId)
+    const selectedIndex = req.params.selectedIndex
+
+    const lodges = user.lodge
+
+    function getImagesUrlArrayString(){
+        for (let i = 0; i < lodges.length ; i++){
+            if(lodges[i].lodgeId === lodgeId){
+                return lodges[i].imagesUrlArrayString
+            }
+        }
+        return null
+    }
+    
+    let imagesUrlArrayString = getImagesUrlArrayString()
+
+    if(!imagesUrlArrayString){
+        return res.status(403).json("forbidden")
+    }
+
+    let imagesUrlArray = imagesUrlArrayString.split(",") 
+
+    req.urlToOverwrite = imagesUrlArray[selectedIndex]
+    next()
+}
+
+export async function save_lodge_image_url(req: Request, res: Response): Promise<any>{
+    const user = req.user
+    const lodgeId = Number(req.params.lodgeId)
+    const selectedIndex = req.params.selectedIndex
+    const { imageUrl } = req.body
+
+    const lodges = user.lodge
+    function getImagesUrlArrayString(){
+        for (let i = 0; i < lodges.length ; i++){
+            if(lodges[i].lodgeId === lodgeId){
+                return lodges[i].imagesUrlArrayString
+            }
+        }
+        return null
+    }
+
+    let imagesUrlArrayString = getImagesUrlArrayString()
+
+    if(!imagesUrlArrayString){
+        return res.status(403).json("Unauthorized")
+    }
+
+    let imagesUrlArray = imagesUrlArrayString.split(",")
+    imagesUrlArray[selectedIndex] = imageUrl
+
+    imagesUrlArrayString = imagesUrlArray.toString()
+
+    await prisma.lodge.update({ 
+        where: { 
+            userId: user.userId,
+            lodgeId: Number(lodgeId)
+        },
+        data: {
+            imagesUrlArrayString: imagesUrlArrayString
+        }
+    })
+
+    return res.json("Upload succesful.")
+}
+
+export async function get_lodge_images_url_for_delete(req: Request, res: Response, next: NextFunction): Promise<any>{
+    const user = req.user
+    const lodgeId = Number(req.params.lodgeId)
+
+    if(!lodgeId ||!Number.isInteger(lodgeId) ){
+        return res.status(400).json("Invalid Input.")
+    }
+
+    const oldlodge = await prisma.lodge.findFirst({ where: { lodgeId: lodgeId, userId: user.userId  } })
+    
+    if(!oldlodge){
+        return res.status(400).json("Item has been deleted, or never existed.")
+    }
+    req.urlArrayToDelete = oldlodge.imagesUrlArrayString.split(",")
+    next()
 }

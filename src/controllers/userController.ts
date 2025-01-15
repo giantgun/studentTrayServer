@@ -240,6 +240,7 @@ export async function get_user_private(req: Request, res: Response): Promise<any
             service: true,
             room: true,
             business: true,
+            createdAt: true
         }
     })
 
@@ -268,7 +269,8 @@ export async function get_user_private(req: Request, res: Response): Promise<any
         items: user.item,
         services: user.service,
         lodges: user.lodge,
-        rooms: user.room
+        rooms: user.room,
+        createdAt: user.createdAt
     })
 
 
