@@ -35,6 +35,8 @@ router.post("/editProfile", asyncHandler(authorization), asyncHandler(edit_profi
 
 router.post("/profile/edit/photo-url", asyncHandler(authorization), asyncHandler(save_user_photo_url))
 
+router.post("/profile/edit", asyncHandler(authorization), asyncHandler(edit_profile))
+
 router.get("/public/:userId", asyncHandler(authorization), asyncHandler(get_user_public))
 
 router.get("/profile", asyncHandler(authorization), asyncHandler(get_user_private))

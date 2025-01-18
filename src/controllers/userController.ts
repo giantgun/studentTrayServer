@@ -71,6 +71,7 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
             username: username 
         }, 
         select: { 
+            phoneNumber:true,
             school: true,
             password: true,
             username: true,
@@ -103,6 +104,8 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
                 username: user.username,
                 school: user.school,
                 photoUrl: user.photoUrl,
+                email: user.email,
+                phoneNumber: user.phoneNumber
             },
             business: {
                 businessName: business.businessName,
@@ -125,6 +128,8 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
             username: user.username,
             school: user.school,
             photoUrl: user.photoUrl,
+            email: user.email,
+            phoneNumber: user.phoneNumber
         },
     })
 
@@ -138,18 +143,16 @@ export async function signOut_user(req: Request, res: Response): Promise<any> {
 export async function edit_profile(req: Request, res: Response): Promise<any>{
     const {
         username,
-        firstName,
-        lastName,
-        dateOfBirth,
+        email,
+        phoneNumber,
         school
     } = req.body
 
     const user = req.user
     if(
         !username ||
-        !firstName ||
-        !lastName ||
-        !dateOfBirth ||
+        !email ||
+        !phoneNumber ||
         !school
     ){
         return res.status(400).json("Invalid Input.")
@@ -159,7 +162,13 @@ export async function edit_profile(req: Request, res: Response): Promise<any>{
         where: { userId: user.userId }, 
         data: {
             username: username,
-            school: school
+            email,
+            phoneNumber,
+            school: {
+                connect: {
+                    schoolName: school
+                }
+            }
         },  
         select: { 
             school: true,
@@ -229,18 +238,14 @@ export async function get_user_private(req: Request, res: Response): Promise<any
     const reviews = await prisma.review.findMany({where: { userId: userId }})
     const user = await prisma.user.findUnique({
         where: { userId: userId },
-        select: {
+        include: {
             school: true,
-            username: true,
-            userId: true,
-            photoUrl: true,
             review: true,
             lodge: true,
             item: true,
             service: true,
             room: true,
             business: true,
-            createdAt: true
         }
     })
 
@@ -270,7 +275,9 @@ export async function get_user_private(req: Request, res: Response): Promise<any
         services: user.service,
         lodges: user.lodge,
         rooms: user.room,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        email: user.email,
+        phoneNumber: user.phoneNumber
     })
 
 

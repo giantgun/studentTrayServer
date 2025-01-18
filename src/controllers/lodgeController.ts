@@ -130,7 +130,7 @@ export async function get_a_lodge(req: Request, res: Response): Promise<any>{
         return res.status(200).json({
             ...lodge,
             phoneNumber: business.phoneNumber,
-            business: true
+            owner: "business"
         })
     }
     const owner = await prisma.user.findUnique({ where: {userId: lodge?.userId} })
@@ -138,7 +138,7 @@ export async function get_a_lodge(req: Request, res: Response): Promise<any>{
     return res.status(200).json({
         ...lodge,
         phoneNumber: owner?.phoneNumber,
-        user: true
+        owner: "user"
     })
 }
 

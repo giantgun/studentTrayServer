@@ -80,7 +80,6 @@ export async function register_business(req: Request, res: Response): Promise<an
 export async function edit_business(req: Request, res: Response): Promise<any>{
     const {
         businessName,
-        address,
         businessEmail,
         phoneNumber,
         nearestSchool,
@@ -91,7 +90,6 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
 
     if(
         !businessName ||
-        !address ||
         !businessEmail ||
         !phoneNumber ||
         !nearestSchool ||
@@ -104,7 +102,6 @@ export async function edit_business(req: Request, res: Response): Promise<any>{
         where: { userId: userId },
         data: {        
             businessName: businessName,
-            address: address,
             businessEmail: businessEmail,
             phoneNumber: phoneNumber,
             description: description,

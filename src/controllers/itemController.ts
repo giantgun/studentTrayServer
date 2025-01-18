@@ -301,7 +301,7 @@ export async function save_item_image_url(req: Request, res: Response): Promise<
     let imagesUrlArrayString = getImagesUrlArrayString()
 
     if(!imagesUrlArrayString){
-        return res.status(401).json("Unauthorized")
+        return res.status(403).json("Forbidden.")
     }
 
     let imagesUrlArray = imagesUrlArrayString.split(",")

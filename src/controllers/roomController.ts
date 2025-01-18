@@ -144,7 +144,7 @@ export async function get_a_room(req: Request, res: Response): Promise<any>{
         return res.status(200).json({
             ...room,
             phoneNumber: business.phoneNumber,
-            business: true
+            owner: "business"
         })
     }
     const owner = await prisma.user.findUnique({ where: {userId: room?.userId} })
@@ -152,7 +152,7 @@ export async function get_a_room(req: Request, res: Response): Promise<any>{
     return res.status(200).json({
         ...room,
         phoneNumber: owner?.phoneNumber,
-        user: true
+        owner: "user"
     })
 }
 
