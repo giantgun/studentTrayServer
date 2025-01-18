@@ -3,5 +3,6 @@ declare namespace Express {
        urlToOverwrite?: string
        user?: any
        urlArrayToDelete?: any[]
+       productTier?: "free" | "paid"
     }
  }

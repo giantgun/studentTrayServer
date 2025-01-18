@@ -35,6 +35,10 @@ export const authorization = async  (req: Request, res: Response, next: NextFunc
         review: true,      
         room: true,        
         service: true,
+        itemsPaidFor: true,
+        servicesPaidFor: true,
+        lodgesPaidFor: true,
+        roomsPaidFor: true
       }
     })
 

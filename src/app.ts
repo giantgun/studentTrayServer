@@ -10,6 +10,7 @@ import itemRouter from "./routes/itemRouter"
 import serviceRouter from "./routes/serviceRouter"
 import businessRouter from "./routes/businessRouter"
 import cloudinaryRouter from "./routes/cloudinaryRouter"
+import webhookRouter from "./routes/webHookRouter"
 import cors from "cors"
 
 const app = express()
@@ -33,6 +34,7 @@ app.use(/\/rooms*/, roomRouter)
 app.use(/\/items*/, itemRouter)
 app.use(/\/services*/, serviceRouter)
 app.use(/\/business*/, businessRouter)
+app.use(/\/webhook*/, webhookRouter)
 
 //error handling
 app.use((req, res, next) => {

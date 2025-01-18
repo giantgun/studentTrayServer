@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
 }
 
@@ -43,12 +43,13 @@ model item {
   videoUrl             String?       @db.Text
   createdAt            DateTime      @default(now())
   updatedAt            DateTime
+  tier                 String        @default("free")
   user                 user          @relation(fields: [userId], references: [userId], map: "Item_userId_fkey")
   item_school          item_school[]
 
+  @@index([userId], map: "Item_userId_fkey")
   @@fulltext([description])
   @@fulltext([description, title])
-  @@index([userId], map: "Item_userId_fkey")
 }
 
 model item_school {
@@ -69,10 +70,8 @@ model lodge {
   propertyType           String
   numberOfBedrooms       Int
   numberOfBathrooms      Int
-  numberOfLodges         Int
   paymentFrequency       String
   price                  Int
-  agentFee               Int
   priceType              String
   location               String
   nearestSchool          String
@@ -90,13 +89,16 @@ model lodge {
   videoUrl               String?  @db.Text
   createdAt              DateTime @default(now())
   updatedAt              DateTime
+  numberOfLodges         Int
+  agentFee               Int
+  tier                   String   @default("free")
   school                 school   @relation(fields: [schoolId], references: [schoolId], map: "Lodge_schoolId_fkey")
   user                   user     @relation(fields: [userId], references: [userId], map: "Lodge_userId_fkey")
 
-  @@fulltext([description])
-  @@fulltext([description, propertyType])
   @@index([schoolId], map: "Lodge_schoolId_fkey")
   @@index([userId], map: "Lodge_userId_fkey")
+  @@fulltext([description])
+  @@fulltext([description, propertyType])
 }
 
 model review {
@@ -148,13 +150,14 @@ model room {
   videoUrl               String?  @db.Text
   createdAt              DateTime @default(now())
   updatedAt              DateTime
+  tier                   String   @default("free")
   school                 school   @relation(fields: [schoolId], references: [schoolId], map: "Room_schoolId_fkey")
   user                   user     @relation(fields: [userId], references: [userId], map: "Room_userId_fkey")
 
-  @@fulltext([description])
-  @@fulltext([description, propertyType])
   @@index([schoolId], map: "Room_schoolId_fkey")
   @@index([userId], map: "Room_userId_fkey")
+  @@fulltext([description])
+  @@fulltext([description, propertyType])
 }
 
 model school {
@@ -184,12 +187,13 @@ model service {
   videoUrl                  String?          @db.Text
   createdAt                 DateTime         @default(now())
   updatedAt                 DateTime
+  tier                      String           @default("free")
   user                      user             @relation(fields: [userId], references: [userId], map: "Service_userId_fkey")
   service_school            service_school[]
 
+  @@index([userId], map: "Service_userId_fkey")
   @@fulltext([description])
   @@fulltext([description, title])
-  @@index([userId], map: "Service_userId_fkey")
 }
 
 model service_school {
@@ -203,22 +207,26 @@ model service_school {
 }
 
 model user {
-  userId      Int       @id @default(autoincrement())
-  username    String    @unique(map: "User_username_key") @db.VarChar(255)
-  email       String    @unique(map: "User_email_key") @db.VarChar(255)
-  password    String    @db.VarChar(255)
-  photoUrl    String?   @db.VarChar(255)
-  phoneNumber String    @db.VarChar(255)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime
-  schoolId    Int
-  business    business?
-  item        item[]
-  lodge       lodge[]
-  review      review[]
-  room        room[]
-  service     service[]
-  school      school    @relation(fields: [schoolId], references: [schoolId], map: "User_schoolId_fkey")
+  userId          Int       @id @default(autoincrement())
+  username        String    @unique(map: "User_username_key") @db.VarChar(255)
+  email           String    @unique(map: "User_email_key") @db.VarChar(255)
+  password        String    @db.VarChar(255)
+  photoUrl        String?   @db.VarChar(255)
+  phoneNumber     String    @db.VarChar(255)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  schoolId        Int
+  itemsPaidFor    Int?      @default(0)
+  lodgesPaidFor   Int?      @default(0)
+  roomsPaidFor    Int?      @default(0)
+  servicesPaidFor Int?      @default(0)
+  business        business?
+  item            item[]
+  lodge           lodge[]
+  review          review[]
+  room            room[]
+  service         service[]
+  school          school    @relation(fields: [schoolId], references: [schoolId], map: "User_schoolId_fkey")
 
   @@index([schoolId], map: "User_schoolId_fkey")
 }
