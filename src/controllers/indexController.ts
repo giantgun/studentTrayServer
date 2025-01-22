@@ -1,5 +1,9 @@
-import { NextFunction, Response, Request } from "express"
+import { NextFunction, Response, Request } from "express";
 
-export async function index_get(req: Request, res: Response, next: NextFunction){
-    res.json("NOT IMPLEMENTED: index yet.")
+export async function index_get(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  res.json("NOT IMPLEMENTED: index yet.");
 }

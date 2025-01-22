@@ -6,13 +6,15 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./dist/server.js",
     "dev": "npx tsx src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "format": "prettier ./src -w"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@ngrok/ngrok": "^1.4.1",
     "@node-rs/argon2": "^2.0.2",
     "@paystack/inline-js": "^2.22.1",
     "@prisma/client": "^6.2.1",
@@ -33,6 +35,9 @@
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.12.0",
+    "ngrok": "^5.0.0-beta.2",
+    "node-cron": "^3.0.3",
+    "prettier": "^3.4.2",
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
     "ts-node": "^10.9.2"

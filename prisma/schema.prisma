@@ -230,3 +230,10 @@ model user {
 
   @@index([schoolId], map: "User_schoolId_fkey")
 }
+
+model imagesfordelete {
+  transactionId        Int      @id @default(autoincrement())
+  createdAt            DateTime @default(now())
+  imagesUrlArrayString String   @db.Text
+  referenceText        String   @unique
+}
