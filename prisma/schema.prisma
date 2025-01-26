@@ -44,6 +44,9 @@ model item {
   createdAt            DateTime      @default(now())
   updatedAt            DateTime
   tier                 String        @default("free")
+  plan                 String        @default("free")
+  planStatus           String        @default("active")
+  planCode             String?       @default("free")
   user                 user          @relation(fields: [userId], references: [userId], map: "Item_userId_fkey")
   item_school          item_school[]
 
@@ -92,6 +95,9 @@ model lodge {
   numberOfLodges         Int
   agentFee               Int
   tier                   String   @default("free")
+  plan                   String   @default("free")
+  planStatus             String   @default("active")
+  planCode               String?  @default("free")
   school                 school   @relation(fields: [schoolId], references: [schoolId], map: "Lodge_schoolId_fkey")
   user                   user     @relation(fields: [userId], references: [userId], map: "Lodge_userId_fkey")
 
@@ -151,6 +157,9 @@ model room {
   createdAt              DateTime @default(now())
   updatedAt              DateTime
   tier                   String   @default("free")
+  plan                   String   @default("free")
+  planStatus             String   @default("active")
+  planCode               String?  @default("free")
   school                 school   @relation(fields: [schoolId], references: [schoolId], map: "Room_schoolId_fkey")
   user                   user     @relation(fields: [userId], references: [userId], map: "Room_userId_fkey")
 
@@ -188,6 +197,9 @@ model service {
   createdAt                 DateTime         @default(now())
   updatedAt                 DateTime
   tier                      String           @default("free")
+  plan                      String           @default("free")
+  planStatus                String           @default("active")
+  planCode                  String?          @default("free")
   user                      user             @relation(fields: [userId], references: [userId], map: "Service_userId_fkey")
   service_school            service_school[]
 
@@ -207,26 +219,27 @@ model service_school {
 }
 
 model user {
-  userId          Int       @id @default(autoincrement())
-  username        String    @unique(map: "User_username_key") @db.VarChar(255)
-  email           String    @unique(map: "User_email_key") @db.VarChar(255)
-  password        String    @db.VarChar(255)
-  photoUrl        String?   @db.VarChar(255)
-  phoneNumber     String    @db.VarChar(255)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime
-  schoolId        Int
-  itemsPaidFor    Int?      @default(0)
-  lodgesPaidFor   Int?      @default(0)
-  roomsPaidFor    Int?      @default(0)
-  servicesPaidFor Int?      @default(0)
-  business        business?
-  item            item[]
-  lodge           lodge[]
-  review          review[]
-  room            room[]
-  service         service[]
-  school          school    @relation(fields: [schoolId], references: [schoolId], map: "User_schoolId_fkey")
+  userId               Int       @id @default(autoincrement())
+  username             String    @unique(map: "User_username_key") @db.VarChar(255)
+  email                String    @unique(map: "User_email_key") @db.VarChar(255)
+  password             String    @db.VarChar(255)
+  photoUrl             String?   @db.VarChar(255)
+  phoneNumber          String    @db.VarChar(255)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime
+  schoolId             Int
+  itemsSubPlans        String?   @db.LongText
+  lodgesSubPlans       String?   @db.LongText
+  roomsSubPlans        String?   @db.LongText
+  servicesSubPlans     String?   @db.LongText
+  paystackCustomerCode String?
+  business             business?
+  item                 item[]
+  lodge                lodge[]
+  review               review[]
+  room                 room[]
+  service              service[]
+  school               school    @relation(fields: [schoolId], references: [schoolId], map: "User_schoolId_fkey")
 
   @@index([schoolId], map: "User_schoolId_fkey")
 }

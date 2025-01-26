@@ -6,6 +6,14 @@ declare namespace Express {
     productTier?: "free" | "paid";
     product?: "item" | "service" | "lodge" | "room";
     referenceText: string;
+    planType: "unused" | "used" | undefined;
+    paystackCustomerCode: string;
+    plan: {
+      planName: string;
+      planCode: string;
+      maxNumberOfSchools: number;
+      maxNumberOfProducts: number;
+    };
   }
 }
 

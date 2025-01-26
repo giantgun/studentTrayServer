@@ -19,6 +19,8 @@ export async function list_service(req: Request, res: Response): Promise<any> {
     videoUrl,
   } = req.body;
   const userId = req.user.userId;
+  const plan = req.plan
+  const productTier = req.productTier
 
   if (
     schoolArray.length < 1 ||
@@ -59,6 +61,9 @@ export async function list_service(req: Request, res: Response): Promise<any> {
       userId: userId,
       priceType: priceType,
       videoUrl,
+      planCode: plan.planCode,
+      tier: productTier,
+      plan: JSON.stringify(plan),
       updatedAt: currentDate,
       service_school: {
         create: saveSchools,
@@ -90,6 +95,9 @@ export async function list_service_from_webhook(
   const userId = req.user.userId;
   const user = req.user;
   const product = req.product;
+  const plan = req.plan
+  const productTier = req.productTier
+  const referenceText = req.referenceText;
 
   if (user && product === "service") {
     const jsonStingifiedAvailabilty = JSON.stringify(availability);
@@ -115,12 +123,18 @@ export async function list_service_from_webhook(
         imagesUrlArrayString: imagesUrlArrayString,
         userId: userId,
         priceType: priceType,
+        planCode: plan.planCode,
+        plan: JSON.stringify(plan),
+        tier: productTier,
         videoUrl,
         updatedAt: currentDate,
         service_school: {
           create: saveSchools,
         },
       },
+    });
+    await prisma.imagesfordelete.delete({
+      where: { referenceText: referenceText },
     });
   }
   next();

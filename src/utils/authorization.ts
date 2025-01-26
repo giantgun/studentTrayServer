@@ -22,27 +22,14 @@ export const authorization = async (
 
   const user = await prisma.user.findUnique({
     where: { email: email },
-    select: {
+    include: {
       school: true,
-      password: true,
-      username: true,
-      userId: true,
-      email: true,
-      photoUrl: true,
-      phoneNumber: true,
-      createdAt: true,
-      updatedAt: true,
-      schoolId: true,
       business: true,
       item: true,
       lodge: true,
       review: true,
       room: true,
       service: true,
-      itemsPaidFor: true,
-      servicesPaidFor: true,
-      lodgesPaidFor: true,
-      roomsPaidFor: true,
     },
   });
 

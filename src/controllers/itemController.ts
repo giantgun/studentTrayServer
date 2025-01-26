@@ -18,6 +18,7 @@ export async function list_item(req: Request, res: Response): Promise<any> {
   } = req.body;
   const userId = req.user.userId;
   const productTier = req.productTier;
+  const plan = req.plan;
 
   if (
     !imagesUrlArrayString ||
@@ -55,6 +56,8 @@ export async function list_item(req: Request, res: Response): Promise<any> {
       numberInStock: Number(numberInStock),
       updatedAt: currentDate,
       tier: productTier,
+      plan: JSON.stringify(plan),
+      planCode: plan.planCode,
       item_school: {
         create: saveSchools,
       },
@@ -72,8 +75,10 @@ export async function list_item_from_webhook(
   const product = req.product;
   const productTier = req.productTier;
   const referenceText = req.referenceText;
+  const plan = req.plan;
 
   if (user && product === "item") {
+    console.log(product)
     const {
       videoUrl,
       imagesUrlArrayString,
@@ -110,6 +115,8 @@ export async function list_item_from_webhook(
         numberInStock: Number(numberInStock),
         updatedAt: currentDate,
         tier: productTier,
+        plan: JSON.stringify(plan),
+        planCode: plan.planCode,
         item_school: {
           create: saveSchools,
         },
@@ -119,16 +126,6 @@ export async function list_item_from_webhook(
     await prisma.imagesfordelete.delete({
       where: { referenceText: referenceText },
     });
-
-    if (productTier === "paid") {
-      const newItemsPaidFor = user.itemsPaidFor + 1;
-      await prisma.user.update({
-        where: { userId: user.userId },
-        data: {
-          itemsPaidFor: newItemsPaidFor,
-        },
-      });
-    }
   }
   next();
 }

@@ -14,6 +14,7 @@ import { index_get } from "../controllers/indexController";
 import { authorization } from "../utils/authorization";
 import { giveAuthorization } from "../utils/giveAuthorization";
 import { create_user_review } from "../controllers/reviewController";
+import { update_user_card } from "../controllers/paystackController";
 
 dotenv.config();
 
@@ -63,6 +64,12 @@ router.post(
   "/review/:userId",
   asyncHandler(authorization),
   asyncHandler(create_user_review),
+);
+
+router.get(
+  "/plan/:subCode",
+  asyncHandler(authorization),
+  asyncHandler(update_user_card),
 );
 
 export default router;

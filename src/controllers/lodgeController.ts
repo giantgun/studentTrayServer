@@ -30,6 +30,9 @@ export async function list_lodge(req: Request, res: Response): Promise<any> {
     videoUrl,
   } = req.body;
   const userId = req.user.userId;
+  const productTier = req.productTier;
+  const plan = req.plan;
+  
 
   if (
     !propertyType ||
@@ -76,6 +79,9 @@ export async function list_lodge(req: Request, res: Response): Promise<any> {
       imagesUrlArrayString: imagesUrlArrayString,
       agentFee: Number(agentFee),
       videoUrl,
+      tier: productTier,
+      planCode: plan.planCode,
+      plan: JSON.stringify(plan),
       updatedAt: currentDate,
       user: {
         connect: {
@@ -125,6 +131,9 @@ export async function list_lodge_from_webhook(
   const userId = req.user.userId;
   const user = req.user;
   const product = req.product;
+  const plan = req.plan
+  const productTier = req.productTier
+  const referenceText = req.referenceText;
 
   if (user && product === "lodge") {
     const currentDate = new Date();
@@ -154,6 +163,9 @@ export async function list_lodge_from_webhook(
         agentFee: Number(agentFee),
         videoUrl,
         updatedAt: currentDate,
+        tier: productTier,
+        planCode: plan.planCode,
+        plan: JSON.stringify(plan),
         user: {
           connect: {
             userId: userId,
@@ -165,6 +177,10 @@ export async function list_lodge_from_webhook(
           },
         },
       },
+    });
+
+    await prisma.imagesfordelete.delete({
+      where: { referenceText: referenceText },
     });
   }
   next();

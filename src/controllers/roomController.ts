@@ -58,6 +58,8 @@ export async function list_room(req: Request, res: Response): Promise<any> {
   }
 
   const userId = req.user.userId;
+  const productTier = req.productTier
+  const plan = req.plan
   const currentDate = new Date();
 
   await prisma.room.create({
@@ -89,6 +91,9 @@ export async function list_room(req: Request, res: Response): Promise<any> {
       dateOfBirth: dateOfBirth,
       additionalInfo: additionalInfo,
       videoUrl,
+      planCode: plan.planCode,
+      plan: JSON.stringify(plan),
+      tier: productTier,
       updatedAt: currentDate,
       user: {
         connect: {
@@ -142,6 +147,9 @@ export async function list_room_from_webhook(
   } = req.body;
   const user = req.user;
   const product = req.product;
+  const plan = req.plan
+  const productTier = req.productTier
+  const referenceText = req.referenceText;
 
   if (user && product === "room") {
     const userId = req.user.userId;
@@ -176,6 +184,8 @@ export async function list_room_from_webhook(
         dateOfBirth: dateOfBirth,
         additionalInfo: additionalInfo,
         videoUrl,
+        tier: productTier,
+        planCode: plan.planCode,
         updatedAt: currentDate,
         user: {
           connect: {
@@ -188,6 +198,9 @@ export async function list_room_from_webhook(
           },
         },
       },
+    });
+    await prisma.imagesfordelete.delete({
+      where: { referenceText: referenceText },
     });
   }
   next();

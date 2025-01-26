@@ -10,13 +10,14 @@ import { list_item_from_webhook } from "../controllers/itemController";
 import { list_service_from_webhook } from "../controllers/serviceController";
 import { list_lodge_from_webhook } from "../controllers/lodgeController";
 import { list_room_from_webhook } from "../controllers/roomController";
+import { save_user_new_subscription_plan } from "../controllers/userController";
 
 const router = express.Router();
 
 router.post(
   "/paystack",
   asyncHandler(paystack_web_hook),
-  asyncHandler(delete_files_conditionally),
+  asyncHandler(save_user_new_subscription_plan),
   asyncHandler(list_item_from_webhook),
   asyncHandler(list_service_from_webhook),
   asyncHandler(list_lodge_from_webhook),

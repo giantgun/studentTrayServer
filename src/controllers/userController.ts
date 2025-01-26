@@ -320,6 +320,130 @@ export async function save_user_photo_url(
   return res.json("Upload succesful.");
 }
 
+export async function save_user_new_subscription_plan(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const user = req.user;
+  const plan = req.plan;
+  const product = req.product;
+  const productTier = req.productTier 
+  const paystackCustomerCode = req.paystackCustomerCode
+
+  try{
+    if (plan && user) {
+      if(!user.paystackCustomerCode){
+        await prisma.user.update({
+          where: {
+            userId: user.userId           
+          },
+          data: {
+            paystackCustomerCode: paystackCustomerCode
+          }
+        })
+      }
+      if (product === "item") {
+        if (productTier === "paid") {
+          console.log("PAID IS RUNNING")
+          if(user.itemsSubPlans){
+            let newItemPlans = JSON.parse(user.itemsSubPlans);
+            newItemPlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                itemsSubPlans: JSON.stringify(newItemPlans),
+              },
+            });
+          }else{
+            let newItemPlans = [];
+            newItemPlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                itemsSubPlans: JSON.stringify(newItemPlans),
+              },
+            });
+          }
+        }
+        next()
+      } else if (product === "service") {
+        if (productTier === "paid") {
+          if(user.servicesSubPlans){
+            let newServicesPlans = JSON.parse(user.servicesSubPlans);
+            newServicesPlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                servicesSubPlans: JSON.stringify(newServicesPlans),
+              },
+            });
+          }else{
+            let newServicesPlans = [];
+            newServicesPlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                servicesSubPlans: JSON.stringify(newServicesPlans),
+              },
+            });
+          }
+        }
+        next()
+      } else if (product === "lodge") {
+        if (productTier === "paid") {
+          if(user.lodgesSubPlans){
+            let newLodgePlans = JSON.parse(user.lodgesSubPlans);
+            newLodgePlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                lodgesSubPlans: JSON.stringify(newLodgePlans),
+              },
+            });
+          }else{
+            let newLodgePlans = [];
+            newLodgePlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                lodgesSubPlans: JSON.stringify(newLodgePlans),
+              },
+            });
+          }
+        }
+        next()
+      } else if (product === "room") {
+        if (productTier === "paid") {
+          if(user.roomsSubPlans){
+            let newRoomPlans = JSON.parse(user.roomsSubPlans);
+            newRoomPlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                roomsSubPlans: JSON.stringify(newRoomPlans),
+              },
+            });
+          }else{
+            let newRoomPlans = [];
+            newRoomPlans.push(plan);
+            await prisma.user.update({
+              where: { userId: user.userId },
+              data: {
+                roomsSubPlans: JSON.stringify(newRoomPlans),
+              },
+            });
+          }
+        }
+        next()
+      }
+    }
+  }catch(error: any){
+    console.error(error)
+  }
+
+}
+
 async function generateAccessToken(email: string) {
   return jwt.sign({ email: email }, tokenSecret!, { expiresIn: "7d" });
 }
