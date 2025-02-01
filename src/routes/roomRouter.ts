@@ -12,6 +12,7 @@ import {
   save_room_image_url,
 } from "../controllers/roomController";
 import { delete_files_conditionally } from "../controllers/cloudinaryController";
+import { pay_for_room_listing } from "../controllers/paystackController";
 
 const router = express.Router();
 
@@ -45,6 +46,11 @@ router.get(
   asyncHandler(delete_room),
 );
 
-router.post("/listRoom", asyncHandler(authorization), asyncHandler(list_room));
+router.post(
+  "/listRoom",
+  asyncHandler(authorization),
+  asyncHandler(pay_for_room_listing),
+  asyncHandler(list_room),
+);
 
 export default router;

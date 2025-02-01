@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { IsProductAllowed } from "../utils/utils";
+import { IsProductAllowed, shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +18,13 @@ export async function list_item(req: Request, res: Response): Promise<any> {
   } = req.body;
   const userId = req.user.userId;
   const productTier = req.productTier;
-  const plan = req.plan;
+  const plan = req.plan || { planCode: "free" };
+
+  if (productTier === "free" && schoolArray.length > 1) {
+    return res
+      .status(400)
+      .json("maximum number of schools is 1 for free plan.");
+  }
 
   if (
     !imagesUrlArrayString ||
@@ -78,7 +84,7 @@ export async function list_item_from_webhook(
   const plan = req.plan;
 
   if (user && product === "item") {
-    console.log(product)
+    console.log(product);
     const {
       videoUrl,
       imagesUrlArrayString,
@@ -147,13 +153,13 @@ export async function get_all_items(req: Request, res: Response): Promise<any> {
         },
       },
     });
-    return res.status(200).json(items);
+    return res.status(200).json(shuffleArray(items));
   }
 
   const allItems = await prisma.item.findMany({
     where: { item_school: { some: { schoolId: user.school.schoolId } } },
   });
-  return res.status(200).json(allItems);
+  return res.status(200).json(shuffleArray(allItems));
 }
 
 export async function get_an_item(req: Request, res: Response): Promise<any> {
@@ -275,7 +281,14 @@ export async function edit_item(req: Request, res: Response): Promise<any> {
       itemId: itemId,
       userId: userId,
     },
+    include: {
+      item_school: true,
+    },
   });
+
+  if (oldItem?.item_school.length! < schoolArray.length) {
+    return res.status(400).json("your subscription doesn't allow for that");
+  }
 
   if (!oldItem) {
     return res.status(400).json("Item does not exist.");

@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
+import { shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -31,8 +32,7 @@ export async function list_lodge(req: Request, res: Response): Promise<any> {
   } = req.body;
   const userId = req.user.userId;
   const productTier = req.productTier;
-  const plan = req.plan;
-  
+  const plan = req.plan || { planCode: "free" };
 
   if (
     !propertyType ||
@@ -131,8 +131,8 @@ export async function list_lodge_from_webhook(
   const userId = req.user.userId;
   const user = req.user;
   const product = req.product;
-  const plan = req.plan
-  const productTier = req.productTier
+  const plan = req.plan;
+  const productTier = req.productTier;
   const referenceText = req.referenceText;
 
   if (user && product === "lodge") {
@@ -202,12 +202,12 @@ export async function get_all_lodges(
         schoolId: user.school.schoolId,
       },
     });
-    return res.status(200).json(lodges);
+    return res.status(200).json(shuffleArray(lodges));
   }
   const allLodges = await prisma.lodge.findMany({
     where: { schoolId: user.school.schoolId },
   });
-  return res.status(200).json(allLodges);
+  return res.status(200).json(shuffleArray(allLodges));
 }
 
 export async function get_a_lodge(req: Request, res: Response): Promise<any> {

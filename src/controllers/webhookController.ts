@@ -14,7 +14,7 @@ export async function paystack_web_hook(
   res: Response,
   next: NextFunction,
 ) {
-  try{
+  try {
     const hash = crypto
       .createHmac("sha512", secret)
       .update(JSON.stringify(req.body))
@@ -33,7 +33,7 @@ export async function paystack_web_hook(
           req.product = "item";
           req.urlArrayToDelete = undefined;
           req.referenceText = event.data.reference;
-          req.paystackCustomerCode = event.data.customer.customer_code
+          req.paystackCustomerCode = event.data.customer.customer_code;
           req.plan = {
             planName: event.data.plan.name,
             planCode: event.data.plan.plan_code,
@@ -49,7 +49,7 @@ export async function paystack_web_hook(
           req.product = "service";
           req.urlArrayToDelete = undefined;
           req.referenceText = event.data.reference;
-          req.paystackCustomerCode = event.data.customer.customer_code
+          req.paystackCustomerCode = event.data.customer.customer_code;
           req.plan = {
             planName: event.data.plan.name,
             planCode: event.data.plan.plan_code,
@@ -64,7 +64,7 @@ export async function paystack_web_hook(
           req.product = "lodge";
           req.urlArrayToDelete = undefined;
           req.referenceText = event.data.reference;
-          req.paystackCustomerCode = event.data.customer.customer_code
+          req.paystackCustomerCode = event.data.customer.customer_code;
           req.plan = {
             planName: event.data.plan.name,
             planCode: event.data.plan.plan_code,
@@ -79,7 +79,7 @@ export async function paystack_web_hook(
           req.product = "room";
           req.urlArrayToDelete = undefined;
           req.referenceText = event.data.reference;
-          req.paystackCustomerCode = event.data.customer.customer_code
+          req.paystackCustomerCode = event.data.customer.customer_code;
           req.plan = {
             planName: event.data.plan.name,
             planCode: event.data.plan.plan_code,
@@ -89,7 +89,7 @@ export async function paystack_web_hook(
           next();
         }
       } else if (event.event === "subscription.create") {
-        sleep(5000)
+        sleep(5000);
         console.log(event);
         const plan = {
           planName: event.data.plan.name,
@@ -97,298 +97,300 @@ export async function paystack_web_hook(
           maxNumberOfSchools: Number(event.data.plan.name.split(" ")[4]),
           maxNumberOfProducts: Number(event.data.plan.name.split(" ")[1]),
           subCode: event.data.subscription_code,
-        }
-  
-        const user = await prisma.user.findUnique({ where: { email: event.data.customer.email } })
-        
-        if(user){
-          if(user.itemsSubPlans){
+        };
+
+        const user = await prisma.user.findUnique({
+          where: { email: event.data.customer.email },
+        });
+
+        if (user) {
+          if (user.itemsSubPlans) {
             const updatedItemPlans = JSON.parse(`${user.itemsSubPlans}`).map(
-              (productPlan: any) =>{
-                const theProductPlan = productPlan
-                if(theProductPlan.planCode === plan.planCode){
+              (productPlan: any) => {
+                const theProductPlan = productPlan;
+
+                if (theProductPlan.planCode === plan.planCode) {
                   return {
                     ...plan,
-                    subCode: event.data.subscription_code
-                  }
-                }else {
-                  return theProductPlan
+                    subCode: event.data.subscription_code,
+                  };
+                } else {
+                  return theProductPlan;
                 }
-              }
+              },
             );
             await prisma.user.update({
               where: {
-                userId: user.userId
+                userId: user.userId,
               },
               data: {
-                itemsSubPlans: JSON.stringify(updatedItemPlans)
-              }
-            })
+                itemsSubPlans: JSON.stringify(updatedItemPlans),
+              },
+            });
           }
-          if(user.servicesSubPlans){
-            const updatedServicePlans = JSON.parse(`${user.servicesSubPlans}`).map(
-              (productPlan: any) =>{
-                const theProductPlan = productPlan
-                if(theProductPlan.planCode === plan.planCode){
-                  return {
-                    ...plan,
-                    subCode: event.data.subscription_code
-                  }
-                }else {
-                  return theProductPlan
-                }
+          if (user.servicesSubPlans) {
+            const updatedServicePlans = JSON.parse(
+              `${user.servicesSubPlans}`,
+            ).map((productPlan: any) => {
+              const theProductPlan = productPlan;
+              if (theProductPlan.planCode === plan.planCode) {
+                return {
+                  ...plan,
+                  subCode: event.data.subscription_code,
+                };
+              } else {
+                return theProductPlan;
               }
-            );
+            });
             await prisma.user.update({
               where: {
-                userId: user.userId
+                userId: user.userId,
               },
               data: {
-                servicesSubPlans: JSON.stringify(updatedServicePlans)
-              }
-            })
+                servicesSubPlans: JSON.stringify(updatedServicePlans),
+              },
+            });
           }
-          if(user.lodgesSubPlans){
+          if (user.lodgesSubPlans) {
             const updatedLodgePlans = JSON.parse(`${user.lodgesSubPlans}`).map(
-              (productPlan: any) =>{
-                const theProductPlan = productPlan
-                if(theProductPlan.planCode === plan.planCode){
+              (productPlan: any) => {
+                const theProductPlan = productPlan;
+                if (theProductPlan.planCode === plan.planCode) {
                   return {
                     ...plan,
-                    subCode: event.data.subscription_code
-                  }
-                }else {
-                  return theProductPlan
+                    subCode: event.data.subscription_code,
+                  };
+                } else {
+                  return theProductPlan;
                 }
-              }
+              },
             );
             await prisma.user.update({
               where: {
-                userId: user.userId
+                userId: user.userId,
               },
               data: {
-                lodgesSubPlans: JSON.stringify(updatedLodgePlans)
-              }
-            })
+                lodgesSubPlans: JSON.stringify(updatedLodgePlans),
+              },
+            });
           }
-          if(user.roomsSubPlans){
+          if (user.roomsSubPlans) {
             const updatedRoomPlans = JSON.parse(`${user.roomsSubPlans}`).map(
-              (productPlan: any) =>{
-                const theProductPlan = productPlan
-                if(theProductPlan.planCode === plan.planCode){
+              (productPlan: any) => {
+                const theProductPlan = productPlan;
+                if (theProductPlan.planCode === plan.planCode) {
                   return {
                     ...plan,
-                    subCode: event.data.subscription_code
-                  }
-                }else {
-                  return theProductPlan
+                    subCode: event.data.subscription_code,
+                  };
+                } else {
+                  return theProductPlan;
                 }
-              }
+              },
             );
             await prisma.user.update({
               where: {
-                userId: user.userId
+                userId: user.userId,
               },
               data: {
-                roomsSubPlans: JSON.stringify(updatedRoomPlans)
-              }
-            })
+                roomsSubPlans: JSON.stringify(updatedRoomPlans),
+              },
+            });
           }
         }
-  
-        const planCode = plan.planCode
+
+        const planCode = plan.planCode;
         await prisma.item.updateMany({
           where: {
-            planCode: planCode
+            planCode: planCode,
           },
           data: {
-            plan: JSON.stringify(plan)
-          }
-        })
-  
+            plan: JSON.stringify(plan),
+          },
+        });
+
         await prisma.service.updateMany({
           where: {
-            planCode: planCode
+            planCode: planCode,
           },
           data: {
-            plan: JSON.stringify(plan)
-          }
-        })
-  
+            plan: JSON.stringify(plan),
+          },
+        });
+
         await prisma.lodge.updateMany({
           where: {
-            planCode: planCode
+            planCode: planCode,
           },
           data: {
-            plan: JSON.stringify(plan)
-          }
-        })
-  
+            plan: JSON.stringify(plan),
+          },
+        });
+
         await prisma.room.updateMany({
           where: {
-            planCode: planCode
+            planCode: planCode,
           },
           data: {
-            plan: JSON.stringify(plan)
-          }
-        })
-  
+            plan: JSON.stringify(plan),
+          },
+        });
       } else if (event.event === "subscription.not_renew") {
-        try{
+        try {
           console.log(event);
           const plan = {
             planName: event.data.plan.name,
             planCode: event.data.plan.plan_code,
             maxNumberOfSchools: Number(event.data.plan.name.split(" ")[4]),
             maxNumberOfProducts: Number(event.data.plan.name.split(" ")[1]),
-          }
-    
-          console.log(plan)
-          const planCode = plan.planCode
-          console.log(planCode)
+          };
+
+          console.log(plan);
+          const planCode = plan.planCode;
+          console.log(planCode);
           await prisma.item.updateMany({
             where: {
-              planCode: planCode
+              planCode: planCode,
             },
             data: {
-              planStatus: "disabled"
-            }
-          })
-    
+              planStatus: "disabled",
+            },
+          });
+
           await prisma.service.updateMany({
             where: {
-              planCode: planCode
+              planCode: planCode,
             },
             data: {
-              planStatus: "disabled"
-            }
-          })
-    
+              planStatus: "disabled",
+            },
+          });
+
           await prisma.lodge.updateMany({
             where: {
-              planCode: planCode
+              planCode: planCode,
             },
             data: {
-              planStatus: "disabled"
-            }
-          })
-    
+              planStatus: "disabled",
+            },
+          });
+
           await prisma.room.updateMany({
             where: {
-              planCode: planCode
+              planCode: planCode,
             },
             data: {
-              planStatus: "disabled"
-            }
-          })
-        }catch(error){
-          console.error(error)
+              planStatus: "disabled",
+            },
+          });
+        } catch (error) {
+          console.error(error);
         }
-  
-  
       } else if (event.event === "subscription.disable") {
         console.log(event);
-  
+
         const plan = {
           planName: event.data.plan.name,
           planCode: event.data.plan.plan_code,
           maxNumberOfSchools: Number(event.data.plan.name.split(" ")[4]),
           maxNumberOfProducts: Number(event.data.plan.name.split(" ")[1]),
+        };
+
+        const user = await prisma.user.findUnique({
+          where: { email: event.data.customer.email },
+        });
+
+        if (user) {
+          if (user.itemsSubPlans) {
+            const filteredItemPlans = JSON.parse(
+              `${user.itemsSubPlans}`,
+            ).filter((productPlan: any) => {
+              return JSON.parse(`${productPlan}`).planCode !== plan.planCode;
+            });
+            await prisma.user.update({
+              where: {
+                userId: user.userId,
+              },
+              data: {
+                itemsSubPlans: JSON.stringify(filteredItemPlans),
+              },
+            });
+          }
+          if (user.servicesSubPlans) {
+            const filteredServicePlans = JSON.parse(
+              `${user.servicesSubPlans}`,
+            ).filter((productPlan: any) => {
+              return JSON.parse(`${productPlan}`).planCode !== plan.planCode;
+            });
+            await prisma.user.update({
+              where: {
+                userId: user.userId,
+              },
+              data: {
+                servicesSubPlans: JSON.stringify(filteredServicePlans),
+              },
+            });
+          }
+          if (user.lodgesSubPlans) {
+            const filteredLodgePlans = JSON.parse(
+              `${user.lodgesSubPlans}`,
+            ).filter((productPlan: any) => {
+              return JSON.parse(`${productPlan}`).planCode !== plan.planCode;
+            });
+            await prisma.user.update({
+              where: {
+                userId: user.userId,
+              },
+              data: {
+                lodgesSubPlans: JSON.stringify(filteredLodgePlans),
+              },
+            });
+          }
+          if (user.roomsSubPlans) {
+            const filteredRoomPlans = JSON.parse(
+              `${user.roomsSubPlans}`,
+            ).filter((productPlan: any) => {
+              return JSON.parse(`${productPlan}`).planCode !== plan.planCode;
+            });
+            await prisma.user.update({
+              where: {
+                userId: user.userId,
+              },
+              data: {
+                roomsSubPlans: JSON.stringify(filteredRoomPlans),
+              },
+            });
+          }
         }
-  
-        const user = await prisma.user.findUnique({ where: { email: event.data.customer.email } })
-        
-        if(user){
-          if(user.itemsSubPlans){
-            const filteredItemPlans = JSON.parse(`${user.itemsSubPlans}`).filter(
-              (productPlan: any) =>{
-                return JSON.parse(`${productPlan}`).planCode !== plan.planCode
-              }
-            );
-            await prisma.user.update({
-              where: {
-                userId: user.userId
-              },
-              data: {
-                itemsSubPlans: JSON.stringify(filteredItemPlans)
-              }
-            })
-          }
-          if(user.servicesSubPlans){
-            const filteredServicePlans = JSON.parse(`${user.servicesSubPlans}`).filter(
-              (productPlan: any) =>{
-                return JSON.parse(`${productPlan}`).planCode !== plan.planCode
-              }
-            );
-            await prisma.user.update({
-              where: {
-                userId: user.userId
-              },
-              data: {
-                servicesSubPlans: JSON.stringify(filteredServicePlans)
-              }
-            })
-          }
-          if(user.lodgesSubPlans){
-            const filteredLodgePlans = JSON.parse(`${user.lodgesSubPlans}`).filter(
-              (productPlan: any) =>{
-                return JSON.parse(`${productPlan}`).planCode !== plan.planCode
-              }
-            );
-            await prisma.user.update({
-              where: {
-                userId: user.userId
-              },
-              data: {
-                lodgesSubPlans: JSON.stringify(filteredLodgePlans)
-              }
-            })
-          }
-          if(user.roomsSubPlans){
-            const filteredRoomPlans = JSON.parse(`${user.roomsSubPlans}`).filter(
-              (productPlan: any) =>{
-                return JSON.parse(`${productPlan}`).planCode !== plan.planCode
-              }
-            );
-            await prisma.user.update({
-              where: {
-                userId: user.userId
-              },
-              data: {
-                roomsSubPlans: JSON.stringify(filteredRoomPlans)
-              }
-            })
-          }
-        }
-  
-        const planCode = plan.planCode
+
+        const planCode = plan.planCode;
         await prisma.item.deleteMany({
           where: {
-            planCode: planCode
-          }
-        })
-  
+            planCode: planCode,
+          },
+        });
+
         await prisma.service.deleteMany({
           where: {
-            planCode: planCode
-          }
-        })
-  
+            planCode: planCode,
+          },
+        });
+
         await prisma.lodge.deleteMany({
           where: {
-            planCode: planCode
-          }
-        })
-  
+            planCode: planCode,
+          },
+        });
+
         await prisma.room.deleteMany({
           where: {
-            planCode: planCode
-          }
-        })
+            planCode: planCode,
+          },
+        });
       }
     }
-  }catch(error){
-    console.error(error)
+  } catch (error) {
+    console.error(error);
   }
 }
 

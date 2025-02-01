@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { IsProductAllowed } from "../utils/utils";
+import { IsProductAllowed, shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -19,8 +19,14 @@ export async function list_service(req: Request, res: Response): Promise<any> {
     videoUrl,
   } = req.body;
   const userId = req.user.userId;
-  const plan = req.plan
-  const productTier = req.productTier
+  const plan = req.plan || { planCode: "free" };
+  const productTier = req.productTier;
+
+  if (productTier === "free" && schoolArray.length > 1) {
+    return res
+      .status(400)
+      .json("maximum number of schools is 1 for free plan.");
+  }
 
   if (
     schoolArray.length < 1 ||
@@ -95,8 +101,8 @@ export async function list_service_from_webhook(
   const userId = req.user.userId;
   const user = req.user;
   const product = req.product;
-  const plan = req.plan
-  const productTier = req.productTier
+  const plan = req.plan;
+  const productTier = req.productTier;
   const referenceText = req.referenceText;
 
   if (user && product === "service") {
@@ -160,13 +166,13 @@ export async function get_all_services(
         },
       },
     });
-    return res.status(200).json(services);
+    return res.status(200).json(shuffleArray(services));
   }
 
   const allServices = await prisma.service.findMany({
     where: { service_school: { some: { schoolId: user.school.schoolId } } },
   });
-  return res.status(200).json(allServices);
+  return res.status(200).json(shuffleArray(allServices));
 }
 
 export async function get_a_service(req: Request, res: Response): Promise<any> {
@@ -273,10 +279,17 @@ export async function edit_service(req: Request, res: Response): Promise<any> {
       serviceId: serviceId,
       userId: userId,
     },
+    include: {
+      service_school: true,
+    },
   });
 
   if (!oldService) {
     return res.status(400).json("Service does not exist.");
+  }
+
+  if (oldService?.service_school.length! < schoolArray.length) {
+    return res.status(400).json("your subscription doesn't allow for that");
   }
 
   const deleteServiceSchoolRecord = prisma.service_school.deleteMany({
@@ -434,7 +447,7 @@ export async function get_service_images_url_for_delete(
   });
 
   if (!oldService) {
-    return res.status(400).json("Item has been deleted, or never existed.");
+    return res.status(400).json("Service has been deleted, or never existed.");
   }
   req.urlArrayToDelete = oldService.imagesUrlArrayString.split(",");
   next();

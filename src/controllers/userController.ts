@@ -3,6 +3,7 @@ import { Response, Request, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
+import { sendAnEmail, verifyEmailMessage } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -42,8 +43,9 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
 
     const hashedPassword = await argon2.hash(password);
     const currentDate = new Date();
+    const token = await generateEmailVerificationToken(email, phoneNumber);
 
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         username: username,
         email: email,
@@ -51,54 +53,168 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
         schoolId: existingSchool!.schoolId,
         phoneNumber: phoneNumber.toString(),
         updatedAt: currentDate,
+        emailVtoken: token,
+      },
+      select: {
+        userId: true,
       },
     });
 
-    return res.status(200).json("Sign up successful.");
+    const verificationLink = `${process.env.SITE_URL}/account/verified/${user.userId}/${token}`;
+
+    await sendAnEmail(email, "Verify Email", verifyEmailMessage(verificationLink), res);
+
+    return res
+      .status(200)
+      .json({
+        message: "A verification link has been sent to your email.",
+        userId: user.userId
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json("an error occurred");
+  }
+}
+
+export async function verify_user(req: Request, res: Response): Promise<any> {
+  try {
+    const userId = Number(req.params.userId);
+    const token = req.params.token;
+
+    if (!userId || !token) {
+      return res.status(400).json("Invalid input.");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        userId: userId,
+      },
+      include: {
+        school: true,
+      },
+    });
+    if (!user) {
+      return res.status(400).json("Invalid input.");
+    }
+
+    const isTokenValid = user.emailVtoken === token;
+
+    if (!isTokenValid) {
+      return res.status(400).json("token is either expired or never existed.");
+    }
+    await prisma.user.update({
+      where: {
+        userId: user.userId,
+      },
+      data: {
+        verified: true,
+      },
+    });
+    return res.json("email verified successfully.");
   } catch (error) {
     console.error(error);
   }
 }
 
-export async function signIn_user(req: Request, res: Response): Promise<any> {
-  const { username, password } = req.body;
-
-  if (!username || !password) {
-    return res.status(400).json("Invalid input.");
-  }
+export async function resend_verification_email(req: Request, res: Response): Promise<any>{
+  const userId = Number(req.params.userId)
 
   const user = await prisma.user.findUnique({
     where: {
-      username: username,
-    },
-    select: {
-      phoneNumber: true,
-      school: true,
-      password: true,
-      username: true,
-      userId: true,
-      email: true,
-      photoUrl: true,
-    },
-  });
-  if (!user) {
-    return res.status(400).json("Invalid Username or Password.");
+      userId: userId
+    }
+  })
+  if(!user){
+    return res.status(400).json("user does not exist")
   }
+  const token = await generateEmailVerificationToken(user.email, Number(user.phoneNumber))
 
-  const isPasswordValid = await argon2.verify(user!.password, password);
-  if (!isPasswordValid) {
-    return res.status(400).json("Invalid Username or Password.");
-  }
+  await prisma.user.update({
+    where: {
+      userId: user.userId
+    },
+    data: {
+      emailVtoken: token
+    }
+  })
+  const verificationLink = `${process.env.SITE_URL}/account/verified/${user.userId}/${token}`;
 
-  const business = await prisma.business.findUnique({
-    where: { userId: user.userId },
-  });
+  await sendAnEmail(user.email, "Verify Email", verifyEmailMessage(verificationLink), res);
 
-  const token = await generateAccessToken(user.email);
-  if (business) {
-    const nearestSchool = await prisma.school.findUnique({
-      where: { schoolId: business?.nearestSchoolId },
+  return res
+    .status(200)
+    .json("A verification link has been sent to your email.");
+
+}
+
+export async function signIn_user(req: Request, res: Response): Promise<any> {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json("Invalid input.");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+      include: {
+        school: true,
+      },
     });
+    if (!user) {
+      return res.status(400).json("Invalid Username or Password.");
+    }
+    
+    const isPasswordValid = await argon2.verify(user!.password, password);
+    if (!isPasswordValid) {
+      return res.status(400).json("Invalid Username or Password.");
+    }
+    
+    if (user.verified === false) {
+      return res.status(403).json({
+        message: "email not verified",
+        userId: user.userId,
+        email: user.email
+      });
+    }
+    const business = await prisma.business.findUnique({
+      where: { userId: user.userId },
+    });
+
+    const token = await generateAccessToken(user.email);
+    if (business) {
+      const nearestSchool = await prisma.school.findUnique({
+        where: { schoolId: business?.nearestSchoolId },
+      });
+
+      return res
+        .status(200)
+        .cookie("access_token", token, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+        })
+        .json({
+          user: {
+            username: user.username,
+            school: user.school,
+            photoUrl: user.photoUrl,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+          },
+          business: {
+            businessName: business.businessName,
+            address: business.address,
+            businessEmail: business.businessEmail,
+            phoneNumber: business.phoneNumber,
+            nearestSchool: nearestSchool,
+            description: business.description,
+            dateJoined: business.createdAt,
+          },
+        });
+    }
 
     return res
       .status(200)
@@ -115,34 +231,10 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
           email: user.email,
           phoneNumber: user.phoneNumber,
         },
-        business: {
-          businessName: business.businessName,
-          address: business.address,
-          businessEmail: business.businessEmail,
-          phoneNumber: business.phoneNumber,
-          nearestSchool: nearestSchool,
-          description: business.description,
-          dateJoined: business.createdAt,
-        },
       });
+  } catch (error) {
+    console.error(error);
   }
-
-  return res
-    .status(200)
-    .cookie("access_token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-    })
-    .json({
-      user: {
-        username: user.username,
-        school: user.school,
-        photoUrl: user.photoUrl,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-      },
-    });
 }
 
 export async function signOut_user(req: Request, res: Response): Promise<any> {
@@ -289,6 +381,14 @@ export async function get_user_private(
     createdAt: user.createdAt,
     email: user.email,
     phoneNumber: user.phoneNumber,
+    itemFreeSlots: Number(process.env.ITEMS_FREE_SLOTS),
+    serviceFreeSlots: Number(process.env.SERVICES_FREE_SLOTS),
+    lodgeFreeSlots: Number(process.env.LODGES_FREE_SLOTS),
+    roomFreeSlots: Number(process.env.ROOMS_FREE_SLOTS),
+    itemSubPlans: user.itemsSubPlans,
+    serviceSubPlans: user.servicesSubPlans,
+    lodgeSubPlans: user.lodgesSubPlans,
+    roomSubPlans: user.roomsSubPlans,
   });
 }
 
@@ -328,25 +428,25 @@ export async function save_user_new_subscription_plan(
   const user = req.user;
   const plan = req.plan;
   const product = req.product;
-  const productTier = req.productTier 
-  const paystackCustomerCode = req.paystackCustomerCode
+  const productTier = req.productTier;
+  const paystackCustomerCode = req.paystackCustomerCode;
 
-  try{
+  try {
     if (plan && user) {
-      if(!user.paystackCustomerCode){
+      if (!user.paystackCustomerCode) {
         await prisma.user.update({
           where: {
-            userId: user.userId           
+            userId: user.userId,
           },
           data: {
-            paystackCustomerCode: paystackCustomerCode
-          }
-        })
+            paystackCustomerCode: paystackCustomerCode,
+          },
+        });
       }
       if (product === "item") {
         if (productTier === "paid") {
-          console.log("PAID IS RUNNING")
-          if(user.itemsSubPlans){
+          console.log("PAID IS RUNNING");
+          if (user.itemsSubPlans) {
             let newItemPlans = JSON.parse(user.itemsSubPlans);
             newItemPlans.push(plan);
             await prisma.user.update({
@@ -355,7 +455,7 @@ export async function save_user_new_subscription_plan(
                 itemsSubPlans: JSON.stringify(newItemPlans),
               },
             });
-          }else{
+          } else {
             let newItemPlans = [];
             newItemPlans.push(plan);
             await prisma.user.update({
@@ -366,10 +466,10 @@ export async function save_user_new_subscription_plan(
             });
           }
         }
-        next()
+        next();
       } else if (product === "service") {
         if (productTier === "paid") {
-          if(user.servicesSubPlans){
+          if (user.servicesSubPlans) {
             let newServicesPlans = JSON.parse(user.servicesSubPlans);
             newServicesPlans.push(plan);
             await prisma.user.update({
@@ -378,7 +478,7 @@ export async function save_user_new_subscription_plan(
                 servicesSubPlans: JSON.stringify(newServicesPlans),
               },
             });
-          }else{
+          } else {
             let newServicesPlans = [];
             newServicesPlans.push(plan);
             await prisma.user.update({
@@ -389,10 +489,10 @@ export async function save_user_new_subscription_plan(
             });
           }
         }
-        next()
+        next();
       } else if (product === "lodge") {
         if (productTier === "paid") {
-          if(user.lodgesSubPlans){
+          if (user.lodgesSubPlans) {
             let newLodgePlans = JSON.parse(user.lodgesSubPlans);
             newLodgePlans.push(plan);
             await prisma.user.update({
@@ -401,7 +501,7 @@ export async function save_user_new_subscription_plan(
                 lodgesSubPlans: JSON.stringify(newLodgePlans),
               },
             });
-          }else{
+          } else {
             let newLodgePlans = [];
             newLodgePlans.push(plan);
             await prisma.user.update({
@@ -412,10 +512,10 @@ export async function save_user_new_subscription_plan(
             });
           }
         }
-        next()
+        next();
       } else if (product === "room") {
         if (productTier === "paid") {
-          if(user.roomsSubPlans){
+          if (user.roomsSubPlans) {
             let newRoomPlans = JSON.parse(user.roomsSubPlans);
             newRoomPlans.push(plan);
             await prisma.user.update({
@@ -424,7 +524,7 @@ export async function save_user_new_subscription_plan(
                 roomsSubPlans: JSON.stringify(newRoomPlans),
               },
             });
-          }else{
+          } else {
             let newRoomPlans = [];
             newRoomPlans.push(plan);
             await prisma.user.update({
@@ -435,15 +535,23 @@ export async function save_user_new_subscription_plan(
             });
           }
         }
-        next()
+        next();
       }
     }
-  }catch(error: any){
-    console.error(error)
+  } catch (error: any) {
+    console.error(error);
   }
-
 }
 
 async function generateAccessToken(email: string) {
   return jwt.sign({ email: email }, tokenSecret!, { expiresIn: "7d" });
+}
+
+async function generateEmailVerificationToken(
+  email: string,
+  phoneNumber: number,
+) {
+  return jwt.sign({ email: email, phoneNumber: phoneNumber }, tokenSecret!, {
+    expiresIn: "7d",
+  });
 }

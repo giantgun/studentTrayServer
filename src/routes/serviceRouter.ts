@@ -12,6 +12,7 @@ import {
   save_service_image_url,
 } from "../controllers/serviceController";
 import { delete_files_conditionally } from "../controllers/cloudinaryController";
+import { pay_for_service_listing } from "../controllers/paystackController";
 
 const router = express.Router();
 
@@ -40,6 +41,7 @@ router.post(
 router.post(
   "/listService",
   asyncHandler(authorization),
+  asyncHandler(pay_for_service_listing),
   asyncHandler(list_service),
 );
 

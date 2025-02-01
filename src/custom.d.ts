@@ -18,3 +18,5 @@ declare namespace Express {
 }
 
 declare module "node-cron";
+
+declare module "nodemailer";

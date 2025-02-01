@@ -7,6 +7,8 @@ import {
   get_user_public,
   get_user_private,
   save_user_photo_url,
+  verify_user,
+  resend_verification_email,
 } from "../controllers/userController";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
@@ -21,6 +23,10 @@ dotenv.config();
 const router = express.Router();
 
 router.post("/signUp", asyncHandler(signUp_user));
+
+router.get("/verify/:userId/:token", asyncHandler(verify_user));
+
+router.get("/verify/:userId", asyncHandler(resend_verification_email));
 
 router.post("/signIn", asyncHandler(signIn_user));
 

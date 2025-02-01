@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -58,8 +59,8 @@ export async function list_room(req: Request, res: Response): Promise<any> {
   }
 
   const userId = req.user.userId;
-  const productTier = req.productTier
-  const plan = req.plan
+  const productTier = req.productTier;
+  const plan = req.plan || { planCode: "free" };
   const currentDate = new Date();
 
   await prisma.room.create({
@@ -147,8 +148,8 @@ export async function list_room_from_webhook(
   } = req.body;
   const user = req.user;
   const product = req.product;
-  const plan = req.plan
-  const productTier = req.productTier
+  const plan = req.plan;
+  const productTier = req.productTier;
   const referenceText = req.referenceText;
 
   if (user && product === "room") {
@@ -219,12 +220,12 @@ export async function get_all_rooms(req: Request, res: Response): Promise<any> {
         schoolId: user.school.schoolId,
       },
     });
-    return res.status(200).json(rooms);
+    return res.status(200).json(shuffleArray(rooms));
   }
   const allRooms = await prisma.room.findMany({
     where: { schoolId: user.school.schoolId },
   });
-  return res.status(200).json(allRooms);
+  return res.status(200).json(shuffleArray(allRooms));
 }
 
 export async function get_a_room(req: Request, res: Response): Promise<any> {

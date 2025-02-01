@@ -12,6 +12,7 @@ import {
   save_lodge_image_url,
 } from "../controllers/lodgeController";
 import { delete_files_conditionally } from "../controllers/cloudinaryController";
+import { pay_for_lodge_listing } from "../controllers/paystackController";
 
 const router = express.Router();
 
@@ -48,6 +49,7 @@ router.get(
 router.post(
   "/listLodge",
   asyncHandler(authorization),
+  asyncHandler(pay_for_lodge_listing),
   asyncHandler(list_lodge),
 );
 

@@ -233,6 +233,8 @@ model user {
   roomsSubPlans        String?   @db.LongText
   servicesSubPlans     String?   @db.LongText
   paystackCustomerCode String?
+  verified             Boolean?  @default(false)
+  emailVtoken          String?    @db.LongText
   business             business?
   item                 item[]
   lodge                lodge[]
