@@ -189,6 +189,7 @@ export async function update_password(req: Request, res: Response): Promise<any>
   const token = req.params.token;
 
   if (!newPassword || !userId || !token) {
+    console.log()
     return res.status(400).json("Invalid Input.");
   }
 
@@ -201,6 +202,7 @@ export async function update_password(req: Request, res: Response): Promise<any>
     },
   });
   if (!user) {
+    console.log(user)
     return res.status(400).json("Invalid input.");
   }
 
@@ -278,6 +280,7 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
       return res.status(400).json("Invalid Username or Password.");
     }
     
+    console.log(user.password)
     const isPasswordValid = await argon2.verify(user!.password, password);
     if (!isPasswordValid) {
       return res.status(400).json("Invalid Username or Password.");
