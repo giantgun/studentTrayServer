@@ -15,11 +15,11 @@ server.listen(port, () => {
 });
 
 try {
-  ngrok
-    .connect({ addr: port, authtoken_from_env: true })
-    .then((listener) =>
-      console.log(`Ingress established at: ${listener.url()}`),
-    );
+  // ngrok
+  //   .connect({ addr: port, authtoken_from_env: true })
+  //   .then((listener) =>
+  //     console.log(`Ingress established at: ${listener.url()}`),
+  //   );
 } catch (error) {
   console.error(error);
 }

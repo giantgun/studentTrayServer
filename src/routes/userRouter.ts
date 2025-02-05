@@ -9,6 +9,9 @@ import {
   save_user_photo_url,
   verify_user,
   resend_verification_email,
+  update_password,
+  resend_change_password_email,
+  get_update_password_link,
 } from "../controllers/userController";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
@@ -27,6 +30,12 @@ router.post("/signUp", asyncHandler(signUp_user));
 router.get("/verify/:userId/:token", asyncHandler(verify_user));
 
 router.get("/verify/:userId", asyncHandler(resend_verification_email));
+
+router.post("/update-password/:userId/:token", asyncHandler(update_password))
+
+router.post("/update-password", asyncHandler(resend_change_password_email));
+
+router.get("/update-password", asyncHandler(authorization), asyncHandler(get_update_password_link));
 
 router.post("/signIn", asyncHandler(signIn_user));
 

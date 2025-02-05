@@ -3,7 +3,7 @@ import { Response, Request, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { sendAnEmail, verifyEmailMessage } from "../utils/utils";
+import { changePasswordMessage, sendAnEmail, verifyEmailMessage } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -144,6 +144,117 @@ export async function resend_verification_email(req: Request, res: Response): Pr
   return res
     .status(200)
     .json("A verification link has been sent to your email.");
+
+}
+
+export async function resend_change_password_email(req: Request, res: Response): Promise<any>{
+  const { usernameOrEmail } = req.body
+
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { username: usernameOrEmail },
+        { email: usernameOrEmail }
+      ]
+    }
+  })
+
+  if(!user){
+    return res.status(200).json("A link to change has been sent to your email if the email is registered1.")
+  }
+
+  const currentDate = new Date()
+  const token = await generateEmailVerificationToken(user.email, Number(user.phoneNumber), currentDate)
+
+  await prisma.user.update({
+    where: {
+      userId: user.userId
+    },
+    data: {
+      emailVtoken: token
+    }
+  })
+  const verificationLink = `${process.env.SITE_URL}/account/change-password/${user.userId}/${token}`;
+
+  await sendAnEmail(user.email, "Change your Password", changePasswordMessage(verificationLink), res);
+
+  return res
+    .status(200)
+    .json("A link to change has been sent to your email if the email is registered.");
+}
+
+export async function update_password(req: Request, res: Response): Promise<any> {
+  const { newPassword } = req.body;
+  const userId = Number(req.params.userId)
+  const token = req.params.token;
+
+  if (!newPassword || !userId || !token) {
+    return res.status(400).json("Invalid Input.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: {
+      userId: userId,
+    },
+    include: {
+      school: true,
+    },
+  });
+  if (!user) {
+    return res.status(400).json("Invalid input.");
+  }
+
+  const isTokenValid = user.emailVtoken === token;
+
+  if (!isTokenValid) {
+    return res.status(400).json("token is either expired or never existed.");
+  }
+
+  const editedUser = await prisma.user.update({
+    where: { userId: user.userId },
+    data: {
+      password: newPassword
+    },
+    select: {
+      school: true,
+      password: true,
+      username: true,
+      userId: true,
+      email: true,
+      photoUrl: true,
+    },
+  });
+
+  return res.status(200).json({
+    username: editedUser!.username,
+    school: editedUser!.school,
+    photoUrl: editedUser!.photoUrl,
+  });
+}
+
+export async function get_update_password_link(req: Request, res: Response): Promise<any> {
+  const user = req.user
+  
+  const currentDate = new Date()
+  const token = await generateEmailVerificationToken(user.email, Number(user.phoneNumber), currentDate)
+
+  await prisma.user.update({
+    where: {
+      userId: user.userId
+    },
+    data: {
+      emailVtoken: token
+    }
+  })
+  const verificationLink = `${process.env.SITE_URL}/account/change-password/${user.userId}/${token}`;
+
+  return res
+    .status(200)
+    .json({
+      changePasswordLink: verificationLink,
+      userId: user.userId,
+      token: token,
+    });
 
 }
 
@@ -550,8 +661,9 @@ async function generateAccessToken(email: string) {
 async function generateEmailVerificationToken(
   email: string,
   phoneNumber: number,
+  date?: Date
 ) {
-  return jwt.sign({ email: email, phoneNumber: phoneNumber }, tokenSecret!, {
-    expiresIn: "7d",
+  return jwt.sign({ email: email, phoneNumber: phoneNumber, timeStamp: date }, tokenSecret!, {
+    expiresIn: "1d",
   });
 }
