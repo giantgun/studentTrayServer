@@ -12,6 +12,8 @@ import {
   update_password,
   resend_change_password_email,
   get_update_password_link,
+  send_suggestion_email,
+  send_support_email,
 } from "../controllers/userController";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
@@ -32,6 +34,10 @@ router.get("/verify/:userId/:token", asyncHandler(verify_user));
 router.get("/verify/:userId", asyncHandler(resend_verification_email));
 
 router.post("/update-password/:userId/:token", asyncHandler(update_password))
+
+router.post("/suggestion", asyncHandler(send_suggestion_email))
+
+router.post("/support", asyncHandler(send_support_email))
 
 router.post("/update-password", asyncHandler(resend_change_password_email));
 

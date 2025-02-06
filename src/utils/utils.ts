@@ -60,6 +60,44 @@ export async function sendAnEmail(
   }
 }
 
+export async function sendAnEmailAsText(
+    email: string,
+    subject: string,
+    message: string,
+    emailfrom: string,
+    res?: Response,
+  ) {
+      var transporter = nodemailer.createTransport({
+        // service: process.env.COMPANY_EMAIL_SERVICE,
+        host: "smtp.zoho.com",
+        port: 587,
+        service: "Zoho",
+        secure: true,
+        auth: {
+          user: process.env.COMPANY_EMAIL_ZOHO,
+          pass: process.env.COMPANY_EMAIL_PASSWORD_ZOHO,
+        },
+        tls: {
+            rejectUnauthorized: false
+        }
+        
+      });
+    
+      var mailOptions = {
+        from: emailfrom,
+        to: email,
+        subject: subject,
+        text: message,
+      };
+    
+      await transporter.sendMail(mailOptions);
+    try{
+    }catch(error){
+      console.error(error)
+    }
+}
+  
+
 export function shuffleArray(array: any[]) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

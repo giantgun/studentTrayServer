@@ -3,7 +3,7 @@ import { Response, Request, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { changePasswordMessage, sendAnEmail, verifyEmailMessage } from "../utils/utils";
+import { changePasswordMessage, sendAnEmail, sendAnEmailAsText, verifyEmailMessage } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -181,6 +181,26 @@ export async function resend_change_password_email(req: Request, res: Response):
   return res
     .status(200)
     .json("A link to change has been sent to your email if the email is registered.");
+}
+
+export async function send_suggestion_email(req: Request, res: Response): Promise<any>{
+  const { userEmail, message } = req.body
+
+  await sendAnEmailAsText("service@studenttray.com", "Suggestion", message, userEmail, res);
+
+  return res
+    .status(200)
+    .json("Sent successfully.");
+}
+
+export async function send_support_email(req: Request, res: Response): Promise<any>{
+  const { userEmail, message } = req.body
+
+  await sendAnEmailAsText("service@studenttray.com", "Support", message, userEmail, res);
+
+  return res
+    .status(200)
+    .json("Sent successfully.");
 }
 
 export async function update_password(req: Request, res: Response): Promise<any> {
