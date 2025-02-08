@@ -1,6 +1,6 @@
 module.exports = {
-    name: "app",
-    script: "index.ts",
+    name: "server",
+    script: "server.ts",
     interpreter: "bun",
     env: {
       PATH: `~/.bun/bin/bun`
