@@ -5,8 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx tsx src/server.ts",
-    "dev": "npx tsx src/server.ts",
-    "build": "tsc",
+    "dev": "npx tsx watch src/server.ts",
     "format": "prettier ./src -w"
   },
   "keywords": [],
@@ -41,6 +40,8 @@
     "prettier": "^3.4.2",
     "sequelize": "^6.37.5",
     "sequelize-typescript": "^2.1.6",
+    "prisma": "^6.2.1",
+    "tsx": "^4.19.2",
     "ts-node": "^10.9.2"
   },
   "devDependencies": {
@@ -53,8 +54,6 @@
     "@types/node": "^22.10.5",
     "@types/sequelize": "^4.28.20",
     "nodemon": "^3.1.9",
-    "prisma": "^6.2.1",
-    "tsx": "^4.19.2",
     "typescript": "^5.7.3"
   }
 }
