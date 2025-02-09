@@ -3,7 +3,12 @@ import { Response, Request, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
-import { changePasswordMessage, sendAnEmail, sendAnEmailAsText, verifyEmailMessage } from "../utils/utils";
+import {
+  changePasswordMessage,
+  sendAnEmail,
+  sendAnEmailAsText,
+  verifyEmailMessage,
+} from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -62,14 +67,17 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
 
     const verificationLink = `${process.env.SITE_URL}/account/verified/${user.userId}/${token}`;
 
-    await sendAnEmail(email, "Verify Email", verifyEmailMessage(verificationLink), res);
+    await sendAnEmail(
+      email,
+      "Verify Email",
+      verifyEmailMessage(verificationLink),
+      res,
+    );
 
-    return res
-      .status(200)
-      .json({
-        message: "A verification link has been sent to your email.",
-        userId: user.userId
-      });
+    return res.status(200).json({
+      message: "A verification link has been sent to your email.",
+      userId: user.userId,
+    });
   } catch (error) {
     console.error(error);
     res.status(400).json("an error occurred");
@@ -116,100 +124,142 @@ export async function verify_user(req: Request, res: Response): Promise<any> {
   }
 }
 
-export async function resend_verification_email(req: Request, res: Response): Promise<any>{
-  const userId = Number(req.params.userId)
+export async function resend_verification_email(
+  req: Request,
+  res: Response,
+): Promise<any> {
+  const userId = Number(req.params.userId);
 
   const user = await prisma.user.findUnique({
     where: {
-      userId: userId
-    }
-  })
-  if(!user){
-    return res.status(400).json("user does not exist")
+      userId: userId,
+    },
+  });
+  if (!user) {
+    return res.status(400).json("user does not exist");
   }
-  const token = await generateEmailVerificationToken(user.email, Number(user.phoneNumber))
+  const token = await generateEmailVerificationToken(
+    user.email,
+    Number(user.phoneNumber),
+  );
 
   await prisma.user.update({
     where: {
-      userId: user.userId
+      userId: user.userId,
     },
     data: {
-      emailVtoken: token
-    }
-  })
+      emailVtoken: token,
+    },
+  });
   const verificationLink = `${process.env.SITE_URL}/account/verified/${user.userId}/${token}`;
 
-  await sendAnEmail(user.email, "Verify Email", verifyEmailMessage(verificationLink), res);
+  await sendAnEmail(
+    user.email,
+    "Verify Email",
+    verifyEmailMessage(verificationLink),
+    res,
+  );
 
   return res
     .status(200)
     .json("A verification link has been sent to your email.");
-
 }
 
-export async function resend_change_password_email(req: Request, res: Response): Promise<any>{
-  const { usernameOrEmail } = req.body
+export async function resend_change_password_email(
+  req: Request,
+  res: Response,
+): Promise<any> {
+  const { usernameOrEmail } = req.body;
 
   const user = await prisma.user.findFirst({
     where: {
-      OR: [
-        { username: usernameOrEmail },
-        { email: usernameOrEmail }
-      ]
-    }
-  })
+      OR: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+    },
+  });
 
-  if(!user){
-    return res.status(200).json("A link to change has been sent to your email if the email is registered1.")
+  if (!user) {
+    return res
+      .status(200)
+      .json(
+        "A link to change has been sent to your email if the email is registered1.",
+      );
   }
 
-  const currentDate = new Date()
-  const token = await generateEmailVerificationToken(user.email, Number(user.phoneNumber), currentDate)
+  const currentDate = new Date();
+  const token = await generateEmailVerificationToken(
+    user.email,
+    Number(user.phoneNumber),
+    currentDate,
+  );
 
   await prisma.user.update({
     where: {
-      userId: user.userId
+      userId: user.userId,
     },
     data: {
-      emailVtoken: token
-    }
-  })
+      emailVtoken: token,
+    },
+  });
   const verificationLink = `${process.env.SITE_URL}/account/change-password/${user.userId}/${token}`;
 
-  await sendAnEmail(user.email, "Change your Password", changePasswordMessage(verificationLink), res);
+  await sendAnEmail(
+    user.email,
+    "Change your Password",
+    changePasswordMessage(verificationLink),
+    res,
+  );
 
   return res
     .status(200)
-    .json("A link to change has been sent to your email if the email is registered.");
+    .json(
+      "A link to change has been sent to your email if the email is registered.",
+    );
 }
 
-export async function send_suggestion_email(req: Request, res: Response): Promise<any>{
-  const { userEmail, message } = req.body
+export async function send_suggestion_email(
+  req: Request,
+  res: Response,
+): Promise<any> {
+  const { userEmail, message } = req.body;
 
-  await sendAnEmailAsText("service@studenttray.com", "Suggestion", message, userEmail, res);
+  await sendAnEmailAsText(
+    "service@studenttray.com",
+    "Suggestion",
+    message,
+    userEmail,
+    res,
+  );
 
-  return res
-    .status(200)
-    .json("Sent successfully.");
+  return res.status(200).json("Sent successfully.");
 }
 
-export async function send_support_email(req: Request, res: Response): Promise<any>{
-  const { userEmail, message } = req.body
+export async function send_support_email(
+  req: Request,
+  res: Response,
+): Promise<any> {
+  const { userEmail, message } = req.body;
 
-  await sendAnEmailAsText("service@studenttray.com", "Support", message, userEmail, res);
+  await sendAnEmailAsText(
+    "service@studenttray.com",
+    "Support",
+    message,
+    userEmail,
+    res,
+  );
 
-  return res
-    .status(200)
-    .json("Sent successfully.");
+  return res.status(200).json("Sent successfully.");
 }
 
-export async function update_password(req: Request, res: Response): Promise<any> {
+export async function update_password(
+  req: Request,
+  res: Response,
+): Promise<any> {
   const { newPassword } = req.body;
-  const userId = Number(req.params.userId)
+  const userId = Number(req.params.userId);
   const token = req.params.token;
 
   if (!newPassword || !userId || !token) {
-    console.log()
+    console.log();
     return res.status(400).json("Invalid Input.");
   }
 
@@ -222,7 +272,7 @@ export async function update_password(req: Request, res: Response): Promise<any>
     },
   });
   if (!user) {
-    console.log(user)
+    console.log(user);
     return res.status(400).json("Invalid input.");
   }
 
@@ -235,7 +285,7 @@ export async function update_password(req: Request, res: Response): Promise<any>
   const editedUser = await prisma.user.update({
     where: { userId: user.userId },
     data: {
-      password: newPassword
+      password: newPassword,
     },
     select: {
       school: true,
@@ -254,30 +304,34 @@ export async function update_password(req: Request, res: Response): Promise<any>
   });
 }
 
-export async function get_update_password_link(req: Request, res: Response): Promise<any> {
-  const user = req.user
-  
-  const currentDate = new Date()
-  const token = await generateEmailVerificationToken(user.email, Number(user.phoneNumber), currentDate)
+export async function get_update_password_link(
+  req: Request,
+  res: Response,
+): Promise<any> {
+  const user = req.user;
+
+  const currentDate = new Date();
+  const token = await generateEmailVerificationToken(
+    user.email,
+    Number(user.phoneNumber),
+    currentDate,
+  );
 
   await prisma.user.update({
     where: {
-      userId: user.userId
+      userId: user.userId,
     },
     data: {
-      emailVtoken: token
-    }
-  })
+      emailVtoken: token,
+    },
+  });
   const verificationLink = `${process.env.SITE_URL}/account/change-password/${user.userId}/${token}`;
 
-  return res
-    .status(200)
-    .json({
-      changePasswordLink: verificationLink,
-      userId: user.userId,
-      token: token,
-    });
-
+  return res.status(200).json({
+    changePasswordLink: verificationLink,
+    userId: user.userId,
+    token: token,
+  });
 }
 
 export async function signIn_user(req: Request, res: Response): Promise<any> {
@@ -299,18 +353,18 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
     if (!user) {
       return res.status(400).json("Invalid Username or Password.");
     }
-    
-    console.log(user.password)
+
+    console.log(user.password);
     const isPasswordValid = await argon2.verify(user!.password, password);
     if (!isPasswordValid) {
       return res.status(400).json("Invalid Username or Password.");
     }
-    
+
     if (user.verified === false) {
       return res.status(403).json({
         message: "email not verified",
         userId: user.userId,
-        email: user.email
+        email: user.email,
       });
     }
     const business = await prisma.business.findUnique({
@@ -684,9 +738,13 @@ async function generateAccessToken(email: string) {
 async function generateEmailVerificationToken(
   email: string,
   phoneNumber: number,
-  date?: Date
+  date?: Date,
 ) {
-  return jwt.sign({ email: email, phoneNumber: phoneNumber, timeStamp: date }, tokenSecret!, {
-    expiresIn: "1d",
-  });
+  return jwt.sign(
+    { email: email, phoneNumber: phoneNumber, timeStamp: date },
+    tokenSecret!,
+    {
+      expiresIn: "1d",
+    },
+  );
 }

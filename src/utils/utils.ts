@@ -30,73 +30,70 @@ export async function sendAnEmail(
   message: string,
   res?: Response,
 ) {
-    var transporter = nodemailer.createTransport({
-      // service: process.env.COMPANY_EMAIL_SERVICE,
-      host: "smtp.zoho.com",
-      port: 587,
-      service: "Zoho",
-      secure: true,
-      auth: {
-        user: process.env.COMPANY_EMAIL_ZOHO,
-        pass: process.env.COMPANY_EMAIL_PASSWORD_ZOHO,
-      },
-      tls: {
-          rejectUnauthorized: false
-      }
-      
-    });
-  
-    var mailOptions = {
-      from: process.env.COMPANY_EMAIL_ZOHO,
-      to: email,
-      subject: subject,
-      html: message,
-    };
-  
-    await transporter.sendMail(mailOptions);
-  try{
-  }catch(error){
-    console.error(error)
+  var transporter = nodemailer.createTransport({
+    // service: process.env.COMPANY_EMAIL_SERVICE,
+    host: "smtp.zoho.com",
+    port: 587,
+    service: "Zoho",
+    secure: true,
+    auth: {
+      user: process.env.COMPANY_EMAIL_ZOHO,
+      pass: process.env.COMPANY_EMAIL_PASSWORD_ZOHO,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  var mailOptions = {
+    from: process.env.COMPANY_EMAIL_ZOHO,
+    to: email,
+    subject: subject,
+    html: message,
+  };
+
+  await transporter.sendMail(mailOptions);
+  try {
+  } catch (error) {
+    console.error(error);
   }
 }
 
 export async function sendAnEmailAsText(
-    email: string,
-    subject: string,
-    message: string,
-    emailfrom: string,
-    res?: Response,
-  ) {
-      var transporter = nodemailer.createTransport({
-        // service: process.env.COMPANY_EMAIL_SERVICE,
-        host: "smtp.zoho.com",
-        port: 587,
-        service: "Zoho",
-        secure: true,
-        auth: {
-          user: process.env.COMPANY_EMAIL_ZOHO,
-          pass: process.env.COMPANY_EMAIL_PASSWORD_ZOHO,
-        },
-        tls: {
-            rejectUnauthorized: false
-        }
-        
-      });
-    
-      var mailOptions = {
-        from: emailfrom,
-        to: email,
-        subject: subject,
-        text: message,
-      };
-    
-      await transporter.sendMail(mailOptions);
-    try{
-    }catch(error){
-      console.error(error)
-    }
+  email: string,
+  subject: string,
+  message: string,
+  emailfrom: string,
+  res?: Response,
+) {
+  var transporter = nodemailer.createTransport({
+    // service: process.env.COMPANY_EMAIL_SERVICE,
+    host: "smtp.zoho.com",
+    port: 587,
+    service: "Zoho",
+    secure: true,
+    auth: {
+      user: process.env.COMPANY_EMAIL_ZOHO,
+      pass: process.env.COMPANY_EMAIL_PASSWORD_ZOHO,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  var mailOptions = {
+    from: emailfrom,
+    to: email,
+    subject: subject,
+    text: message,
+  };
+
+  await transporter.sendMail(mailOptions);
+  try {
+  } catch (error) {
+    console.error(error);
+  }
 }
-  
 
 export function shuffleArray(array: any[]) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -106,9 +103,8 @@ export function shuffleArray(array: any[]) {
   return array;
 }
 
-export function verifyEmailMessage(verificationLink: string){
-  return(
-      `<!doctype html>
+export function verifyEmailMessage(verificationLink: string) {
+  return `<!doctype html>
           <html lang="en">
           <head>
               <meta charset="UTF-8" />
@@ -264,13 +260,11 @@ export function verifyEmailMessage(verificationLink: string){
               </div>
               </div>
           </body>
-          </html>`
-  )
+          </html>`;
 }
 
-export function changePasswordMessage(verificationLink: string){
-  return(
-      `<!doctype html>
+export function changePasswordMessage(verificationLink: string) {
+  return `<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -422,6 +416,5 @@ export function changePasswordMessage(verificationLink: string){
     </div>
     </div>
 </body>
-</html>`
-  )
+</html>`;
 }
