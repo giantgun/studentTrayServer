@@ -44,7 +44,7 @@ export async function get_file_signature(
   const eager = "w_400,h_300,c_pad|w_260,h_200,c_crop";
   const api_key = process.env.CLOUDINARY_API_KEY;
   const version = `v${timestamp}`;
-  const folder = req.imageUploadFolderPath
+  const folder = req.imageUploadFolderPath;
 
   const optionsForSignature = {
     timestamp,
@@ -64,7 +64,7 @@ export async function get_file_signature(
     api_key,
     timestamp,
     version,
-    folder
+    folder,
   });
 }
 

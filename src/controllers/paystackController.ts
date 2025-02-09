@@ -1077,7 +1077,6 @@ function getUnusedPlan(
   schoolArrayLength: number,
 ) {
   if (userSubPlans) {
-
     const userPlans = JSON.parse(userSubPlans) || [];
     for (let i = 0; i < userPlans.length; i++) {
       const thePlansListedProducts =

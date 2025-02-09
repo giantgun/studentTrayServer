@@ -12,12 +12,13 @@ import businessRouter from "./routes/businessRouter";
 import cloudinaryRouter from "./routes/cloudinaryRouter";
 import webhookRouter from "./routes/webHookRouter";
 import cors from "cors";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
 dotenv.config();
 
 const app = express();
-const siteUrl = `https://${process.env.SITE_URL}` || "https://my-tray.vercel.app"
+const siteUrl =
+  `https://${process.env.SITE_URL}` || "https://my-tray.vercel.app";
 
 //middleware
 app.use(logger("dev"));

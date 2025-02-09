@@ -279,7 +279,6 @@ export async function paystack_web_hook(
           console.error(error);
         }
       } else if (event.event === "subscription.disable") {
-
         const plan = {
           planName: event.data.plan.name,
           planCode: event.data.plan.plan_code,

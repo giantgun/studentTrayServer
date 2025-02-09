@@ -4,12 +4,15 @@ import { IsProductAllowed, shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
-export async function create_service_images_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
-  const user = req.user
-  req.imageUploadFolderPath = `${user.email}/services/${user.service.length + 1}`
-  next()
+export async function create_service_images_folder(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> {
+  const user = req.user;
+  req.imageUploadFolderPath = `${user.email}/services/${user.service.length + 1}`;
+  next();
 }
-
 
 export async function list_service(req: Request, res: Response): Promise<any> {
   const {

@@ -16,10 +16,14 @@ dotenv.config();
 
 const tokenSecret = process.env.TOKEN_SECRET;
 
-export async function create_profile_photo_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
-  const user = req.user
-  req.imageUploadFolderPath = `${user.email}/profilePhoto`
-  next()
+export async function create_profile_photo_folder(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<any> {
+  const user = req.user;
+  req.imageUploadFolderPath = `${user.email}/profilePhoto`;
+  next();
 }
 
 export async function signUp_user(req: Request, res: Response): Promise<any> {
