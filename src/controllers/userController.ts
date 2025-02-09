@@ -16,6 +16,12 @@ dotenv.config();
 
 const tokenSecret = process.env.TOKEN_SECRET;
 
+export async function create_profile_photo_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
+  const user = req.user
+  req.imageUploadFolderPath = `${user.email}/profilePhoto`
+  next()
+}
+
 export async function signUp_user(req: Request, res: Response): Promise<any> {
   try {
     const { username, email, password, phoneNumber, school } = req.body;
@@ -259,7 +265,6 @@ export async function update_password(
   const token = req.params.token;
 
   if (!newPassword || !userId || !token) {
-    console.log();
     return res.status(400).json("Invalid Input.");
   }
 
@@ -272,7 +277,6 @@ export async function update_password(
     },
   });
   if (!user) {
-    console.log(user);
     return res.status(400).json("Invalid input.");
   }
 
@@ -354,7 +358,6 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
       return res.status(400).json("Invalid Username or Password.");
     }
 
-    console.log(user.password);
     const isPasswordValid = await argon2.verify(user!.password, password);
     if (!isPasswordValid) {
       return res.status(400).json("Invalid Username or Password.");
@@ -633,7 +636,6 @@ export async function save_user_new_subscription_plan(
       }
       if (product === "item") {
         if (productTier === "paid") {
-          console.log("PAID IS RUNNING");
           if (user.itemsSubPlans) {
             let newItemPlans = JSON.parse(user.itemsSubPlans);
             newItemPlans.push(plan);

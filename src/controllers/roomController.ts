@@ -4,6 +4,12 @@ import { shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
+export async function create_room_images_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
+  const user = req.user
+  req.imageUploadFolderPath = `${user.email}/rooms/${user.room.length + 1}`
+  next()
+}
+
 export async function list_room(req: Request, res: Response): Promise<any> {
   const {
     imagesUrlArrayString,

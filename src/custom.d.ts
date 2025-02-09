@@ -8,6 +8,7 @@ declare namespace Express {
     referenceText: string;
     planType: "unused" | "used" | undefined;
     paystackCustomerCode: string;
+    imageUploadFolderPath: string;
     plan: {
       planName: string;
       planCode: string;

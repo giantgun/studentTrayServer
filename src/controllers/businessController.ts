@@ -3,6 +3,18 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export async function create_business_profile_photo_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
+  const user = req.user
+  req.imageUploadFolderPath = `${user.email}/businessProfilePhoto`
+  next()
+}
+
+export async function create_business_cover_photo_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
+  const user = req.user
+  req.imageUploadFolderPath = `${user.email}/businessCoverPhoto`
+  next()
+}
+
 export async function register_business(
   req: Request,
   res: Response,

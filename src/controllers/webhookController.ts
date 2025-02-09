@@ -22,11 +22,8 @@ export async function paystack_web_hook(
     if (hash == req.headers["x-paystack-signature"]) {
       res.sendStatus(200);
       const event = req.body;
-      console.log("event", event.event);
       if (event.event === "charge.success") {
-        console.log(event);
         if (event.data.metadata.item_data) {
-          console.log("item_data is ruunninng");
           req.body = JSON.parse(event.data.metadata.item_data);
           req.user = JSON.parse(event.data.metadata.user);
           req.productTier = "paid";
@@ -40,7 +37,6 @@ export async function paystack_web_hook(
             maxNumberOfSchools: Number(event.data.plan.name.split(" ")[4]),
             maxNumberOfProducts: Number(event.data.plan.name.split(" ")[1]),
           };
-          console.log(event.data.reference);
           next();
         } else if (event.data.metadata.service_data) {
           req.body = JSON.parse(event.data.metadata.service_data);
@@ -90,7 +86,6 @@ export async function paystack_web_hook(
         }
       } else if (event.event === "subscription.create") {
         sleep(5000);
-        console.log(event);
         const plan = {
           planName: event.data.plan.name,
           planCode: event.data.plan.plan_code,
@@ -237,7 +232,6 @@ export async function paystack_web_hook(
         });
       } else if (event.event === "subscription.not_renew") {
         try {
-          console.log(event);
           const plan = {
             planName: event.data.plan.name,
             planCode: event.data.plan.plan_code,
@@ -245,9 +239,7 @@ export async function paystack_web_hook(
             maxNumberOfProducts: Number(event.data.plan.name.split(" ")[1]),
           };
 
-          console.log(plan);
           const planCode = plan.planCode;
-          console.log(planCode);
           await prisma.item.updateMany({
             where: {
               planCode: planCode,
@@ -287,7 +279,6 @@ export async function paystack_web_hook(
           console.error(error);
         }
       } else if (event.event === "subscription.disable") {
-        console.log(event);
 
         const plan = {
           planName: event.data.plan.name,
@@ -400,7 +391,6 @@ export async function get_canceled_trans_image_urls_for_delete(
   next: NextFunction,
 ) {
   const transactionImages = await prisma.imagesfordelete.findMany();
-  console.log(transactionImages);
   const imagesfordelete = filterOlderThan12Hours(transactionImages);
   const now = new Date(); // Get current time
   const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000); // 12 hours ago
@@ -415,7 +405,6 @@ export async function get_canceled_trans_image_urls_for_delete(
       urlArrayToDelete.push(imagesUrlArrayStringForDelete[i][j]);
     }
   }
-  console.log(urlArrayToDelete);
 
   await prisma.imagesfordelete.deleteMany({
     where: {
@@ -482,8 +471,6 @@ export async function delete_overdue_free_tier_products(
     ...freeTierRooms,
   ];
 
-  console.log(freeTierProductsForDelete);
-
   const imagesUrlArrayStringForDelete = freeTierProductsForDelete.map(
     (imagefordelete) => imagefordelete.imagesUrlArrayString.split(","),
   );
@@ -493,7 +480,6 @@ export async function delete_overdue_free_tier_products(
       urlArrayToDelete.push(imagesUrlArrayStringForDelete[i][j]);
     }
   }
-  console.log(urlArrayToDelete);
 
   for (let i = 0; i < freeTierItems.length; i++) {
     await prisma.item_school.deleteMany({
@@ -542,7 +528,6 @@ export async function delete_overdue_free_tier_products(
       },
     },
   });
-  console.log(urlArrayToDelete);
 
   res.sendStatus(200);
   req.urlArrayToDelete = urlArrayToDelete;

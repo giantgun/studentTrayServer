@@ -12,8 +12,12 @@ import businessRouter from "./routes/businessRouter";
 import cloudinaryRouter from "./routes/cloudinaryRouter";
 import webhookRouter from "./routes/webHookRouter";
 import cors from "cors";
+import dotenv from "dotenv"
+
+dotenv.config();
 
 const app = express();
+const siteUrl = `https://${process.env.SITE_URL}` || "https://my-tray.vercel.app"
 
 //middleware
 app.use(logger("dev"));
@@ -22,7 +26,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "https://my-tray.vercel.app",
+    origin: siteUrl,
     credentials: true,
   }),
 );

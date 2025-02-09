@@ -4,6 +4,12 @@ import { IsProductAllowed, shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
+export async function create_item_images_folder(req: Request, res: Response, next: NextFunction): Promise<any>{
+  const user = req.user
+  req.imageUploadFolderPath = `${user.email}/items/${user.item.length + 1}`
+  next()
+}
+
 export async function list_item(req: Request, res: Response): Promise<any> {
   const {
     videoUrl,
@@ -84,7 +90,6 @@ export async function list_item_from_webhook(
   const plan = req.plan;
 
   if (user && product === "item") {
-    console.log(product);
     const {
       videoUrl,
       imagesUrlArrayString,
@@ -365,8 +370,6 @@ export async function get_item_image_url_for_overwrite(
   const selectedIndex = req.params.selectedIndex;
 
   const items = user.item;
-  console.log(itemId);
-  console.log(items);
   function getImagesUrlArrayString() {
     for (let i = 0; i < items.length; i++) {
       if (items[i].itemId === itemId) {
@@ -377,7 +380,6 @@ export async function get_item_image_url_for_overwrite(
   }
 
   let imagesUrlArrayString = getImagesUrlArrayString();
-  console.log(imagesUrlArrayString);
 
   if (!imagesUrlArrayString) {
     return res.status(403).json("forbidden");

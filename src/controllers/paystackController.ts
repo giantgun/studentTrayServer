@@ -71,7 +71,7 @@ export async function pay_for_item_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 item in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -158,7 +158,7 @@ export async function pay_for_item_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 item in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -315,7 +315,7 @@ export async function pay_for_service_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 service in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -402,7 +402,7 @@ export async function pay_for_service_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 service in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -573,7 +573,7 @@ export async function pay_for_lodge_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 lodge in 1`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -660,7 +660,7 @@ export async function pay_for_lodge_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 lodge in 1`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -839,7 +839,7 @@ export async function pay_for_room_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 room in 1`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -926,7 +926,7 @@ export async function pay_for_room_listing(
         const stringifiedUser = JSON.stringify(user);
         const createParams = JSON.stringify({
           name: `list 1 room in 1`,
-          interval: "hourly",
+          interval: process.env.SUBSCRIPTION_DURATION,
           amount: `${priceOfProduct}`,
         });
 
@@ -1020,8 +1020,6 @@ export async function update_user_card(
 ): Promise<any> {
   const user = req.user;
   const subCode = req.params.subCode;
-  console.log(subCode);
-  console.log(user.paystackCustomerCode);
 
   const itemsSubPlans = JSON.parse(`${user.itemsSubPlans}`) || [];
   const servicesSubPlans = JSON.parse(`${user.servicesSubPlans}`) || [];
@@ -1038,9 +1036,6 @@ export async function update_user_card(
   const doesPlanCodeBelongToUser = userSubPlans.filter(
     (plan) => subCode === plan.subCode,
   );
-
-  console.log(doesPlanCodeBelongToUser);
-  console.log(user.servicesSubPlans);
 
   if (doesPlanCodeBelongToUser[0] === doesPlanCodeBelongToUser[0]) {
     const options = {
@@ -1062,7 +1057,6 @@ export async function update_user_card(
         });
 
         Res.on("end", () => {
-          console.log(JSON.parse(data));
           res.json(JSON.parse(data));
         });
       })
@@ -1083,7 +1077,7 @@ function getUnusedPlan(
   schoolArrayLength: number,
 ) {
   if (userSubPlans) {
-    console.log(userSubPlans);
+
     const userPlans = JSON.parse(userSubPlans) || [];
     for (let i = 0; i < userPlans.length; i++) {
       const thePlansListedProducts =
@@ -1097,7 +1091,6 @@ function getUnusedPlan(
         userPlans[i].maxNumberOfProducts > thePlansListedProducts.length &&
         userPlans[i].maxNumberOfSchools >= schoolArrayLength
       ) {
-        console.log(userPlans[i]);
         return userPlans[i];
       }
     }
