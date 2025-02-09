@@ -29,5 +29,5 @@ jobs:
           git pull origin main
           git status
           npm install --only=prod
-          npx prisma deploy
+          npx prisma migrate deploy
           pm2 restart server
