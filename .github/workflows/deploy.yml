@@ -25,9 +25,9 @@ jobs:
         key: ${{ secrets.PRIVATE_KEY }}
         port: 22
         script: |
-          cd ~/home/sammy/trayServer
+          cd /home/sammy/trayServer
           git pull origin main
           git status
           npm install --only=prod
           npx prisma deploy
-          pm2 restart node1
+          pm2 restart server
