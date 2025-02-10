@@ -60,7 +60,7 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
     const currentDate = new Date();
     const token = await generateEmailVerificationToken(email, phoneNumber);
 
-    const user = await prisma.user.create({
+    await prisma.user.create({
       data: {
         username: username,
         email: email,
@@ -69,25 +69,14 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
         phoneNumber: phoneNumber.toString(),
         updatedAt: currentDate,
         emailVtoken: token,
+        verified: true
       },
       select: {
         userId: true,
       },
     });
 
-    const verificationLink = `${process.env.SITE_URL}/account/verified/${user.userId}/${token}`;
-
-    await sendAnEmail(
-      email,
-      "Verify Email",
-      verifyEmailMessage(verificationLink),
-      res,
-    );
-
-    return res.status(200).json({
-      message: "A verification link has been sent to your email.",
-      userId: user.userId,
-    });
+    return res.status(200).json("Sign up successfull.");
   } catch (error) {
     console.error(error);
     res.status(400).json("an error occurred");
