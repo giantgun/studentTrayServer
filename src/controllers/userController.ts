@@ -379,6 +379,7 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
           httpOnly: true,
           secure: true,
           domain: process.env.SITE_URL,
+          sameSite: 'none'
         })
         .json({
           user: {
