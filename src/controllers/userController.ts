@@ -377,8 +377,8 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
         .status(200)
         .cookie("access_token", token, {
           httpOnly: true,
-          secure: false,
-          sameSite: "lax",
+          secure: true,
+          domain: process.env.SITE_URL,
         })
         .json({
           user: {
