@@ -183,6 +183,7 @@ export async function pay_for_item_listing(
 
             createRes.on("end", () => {
               const createData = JSON.parse(createdata);
+              console.log(createData)
               const stringifiedItemData = JSON.stringify(req.body);
               const params = JSON.stringify({
                 email: email,
@@ -216,6 +217,7 @@ export async function pay_for_item_listing(
 
                   httpRes.on("end", async () => {
                     const newdata = JSON.parse(data);
+                    console.log(newdata)
                     const access_code = newdata.data.access_code;
                     res.json({ access_code: access_code });
                     await prisma.imagesfordelete.create({
