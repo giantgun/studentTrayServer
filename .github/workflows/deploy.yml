@@ -30,4 +30,5 @@ jobs:
           git status
           npm install --only=prod
           npx prisma migrate deploy
+          npx prisma generate
           pm2 restart server

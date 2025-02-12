@@ -5,5 +5,5 @@ export async function index_get(
   res: Response,
   next: NextFunction,
 ) {
-  res.json("NOT IMPLEMENTED: index yet.");
+  res.json("");
 }

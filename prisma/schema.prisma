@@ -85,10 +85,10 @@ model lodge {
   parking                Boolean  @default(false)
   electricity            Boolean  @default(false)
   water                  Boolean  @default(false)
-  electricityDescription String   @db.LongText
-  waterDescription       String   @db.LongText
+  electricityDescription String?  @db.LongText
+  waterDescription       String?   @db.LongText
   networkQuality         String
-  networkDescription     String   @db.LongText
+  networkDescription     String?  @db.LongText
   videoUrl               String?  @db.Text
   createdAt              DateTime @default(now())
   updatedAt              DateTime
@@ -143,15 +143,15 @@ model room {
   parking                Boolean  @default(false)
   electricity            Boolean  @default(false)
   water                  Boolean  @default(false)
-  electricityDescription String   @db.LongText
-  waterDescription       String   @db.LongText
+  electricityDescription String?   @db.LongText
+  waterDescription       String?   @db.LongText
   networkQuality         String
-  networkDescription     String   @db.LongText
+  networkDescription     String?   @db.LongText
   ownerName              String
   ownerPhone             String
   ownerProgramme         String
   yearOfStudy            String
-  dateOfBirth            String
+  dateOfBirth            String?
   additionalInfo         String?  @db.LongText
   videoUrl               String?  @db.Text
   createdAt              DateTime @default(now())

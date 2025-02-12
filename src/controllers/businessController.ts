@@ -41,7 +41,7 @@ export async function register_business(
   const user = req.user;
 
   if (
-    !businessName ||
+    !businessName || 
     !address ||
     !businessEmail ||
     !phoneNumber ||
@@ -165,6 +165,10 @@ export async function get__business_public(
   res: Response,
 ): Promise<any> {
   const businessId = Number(req.params.businessId);
+
+  if(typeof businessId !== "number"){
+    return res.status(400).json("Invalid Input")
+  }
 
   const reviews = await prisma.review.findMany({
     where: { businessId: businessId },
@@ -295,6 +299,10 @@ export async function save_business_photo_url(
   const user = req.user;
   const { photoUrl } = req.body;
 
+  if(typeof photoUrl !== "string"){
+    return res.status(400).json("Invalid input.")
+  }
+
   await prisma.business.update({
     where: { userId: user.userId },
     data: {
@@ -326,6 +334,10 @@ export async function save_business_cover_photo_url(
 ): Promise<any> {
   const user = req.user;
   const { coverPhotoUrl } = req.body;
+
+  if(typeof coverPhotoUrl !== "string"){
+    return res.status(400).json("Invalid input.")
+  }
 
   await prisma.business.update({
     where: { userId: user.userId },
