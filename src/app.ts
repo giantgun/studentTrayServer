@@ -18,7 +18,7 @@ dotenv.config();
 
 const app = express();
 const siteUrl =
-  `https://${process.env.SITE_URL}` || "https://my-tray.vercel.app";
+  `https://${process.env.SITE_URL}` || "https://studenttray.com";
 
 //middleware
 app.use(logger("dev"));

@@ -11,6 +11,10 @@ export async function create_user_review(
   const { numberOfStars, description } = req.body;
   const userId = Number(req.params.userId);
 
+  if (Number(ownerUserId) === userId){
+    return res.status(403).json("You cannot review your own account!")
+  }
+
   const currentDate = new Date();
   await prisma.review.create({
     data: {
@@ -32,6 +36,11 @@ export async function create_business_review(
   const ownerUserId = req.user.userId;
   const { numberOfStars, description } = req.body;
   const businessId = Number(req.params.businessId);
+  const user = req.user
+
+  if (ownerUserId === user.business.businessId ){
+    return res.status(403).json("You cannot review your own business!")
+  }
 
   const currentDate = new Date();
   await prisma.review.create({
