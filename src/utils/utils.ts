@@ -418,3 +418,8 @@ export function changePasswordMessage(verificationLink: string) {
 </body>
 </html>`;
 }
+
+export function hasDuplicates(a: any[]) {
+  const noDups = new Set(a);
+  return a.length !== noDups.size;
+}

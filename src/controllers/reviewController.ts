@@ -11,7 +11,7 @@ export async function create_user_review(
   const { numberOfStars, description } = req.body;
   const userId = Number(req.params.userId);
 
-  if (Number(ownerUserId) === userId){
+  if (Number(ownerUserId) == userId){
     return res.status(403).json("You cannot review your own account!")
   }
 
@@ -38,7 +38,17 @@ export async function create_business_review(
   const businessId = Number(req.params.businessId);
   const user = req.user
 
-  if (ownerUserId === user.business.businessId ){
+  const business = await prisma.business.findUnique({
+    where: {
+      businessId
+    }
+  })
+
+  if(!business){
+    return res.status(400).json("Invalid input.")
+  }
+
+  if (ownerUserId === business.userId ){
     return res.status(403).json("You cannot review your own business!")
   }
 

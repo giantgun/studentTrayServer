@@ -2,6 +2,7 @@ import { Response, Request, NextFunction } from "express";
 import https from "https";
 import dotenv from "dotenv";
 import { PrismaClient } from "@prisma/client";
+import { hasDuplicates } from "../utils/utils";
 
 dotenv.config;
 const prisma = new PrismaClient();
@@ -36,10 +37,10 @@ export async function pay_for_item_listing(
     imagesUrlArrayString.split(",").length <= 1 ||
     !title ||
     !description ||
-    !price ||
+    !price || !Number.isInteger(Number(price)) ||
     !condition ||
     !category ||
-    !schoolArray ||
+    schoolArray.length < 1 || hasDuplicates(schoolArray) ||
     !numberInStock ||
     !requestedPlan
   ) {
@@ -274,12 +275,12 @@ export async function pay_for_service_listing(
     (servicePrice + pricePerSchool * (schoolArray.length - 1)) * 100;
 
   if (
-    schoolArray.length < 1 ||
+    schoolArray.length < 1 || hasDuplicates(schoolArray) ||
     !title ||
     !priceType ||
     !description ||
     !price ||
-    price <= 0 ||
+    price <= 0 || !Number.isInteger(Number(price)) ||
     !category ||
     (!online && !inPerson) ||
     !availability ||
@@ -530,19 +531,19 @@ export async function pay_for_lodge_listing(
   if (
     !propertyType ||
     !paymentFrequency ||
-    !numberOfLodges ||
-    !price ||
+    !numberOfLodges || !Number.isInteger(Number(numberOfLodges)) ||
+    !price || !Number.isInteger(Number(price)) ||
     !priceType ||
     !location ||
     !nearestSchool ||
-    !walkingTime ||
-    !kekeTime ||
-    !agentFee ||
+    !walkingTime || !Number.isInteger(Number(walkingTime)) ||
+    !kekeTime || !Number.isInteger(Number(kekeTime)) ||
+    !agentFee || !Number.isInteger(Number(agentFee)) ||
     !description ||
     !networkQuality ||
     !imagesUrlArrayString ||
-    !numberOfBedrooms ||
-    !numberOfBathrooms ||
+    !numberOfBedrooms || !Number.isInteger(Number(numberOfBedrooms)) ||
+    !numberOfBathrooms || !Number.isInteger(Number(numberOfBathrooms)) ||
     imagesUrlArrayString.split(",").length <= 1 ||
     !requestedPlan
   ) {
@@ -792,12 +793,12 @@ export async function pay_for_room_listing(
   if (
     !propertyType ||
     !paymentFrequency ||
-    !price ||
+    !price || !Number.isInteger(Number(price)) ||
     !priceType ||
     !location ||
     !school ||
-    !walkingTime ||
-    !kekeTime ||
+    !walkingTime || !Number.isInteger(Number(walkingTime)) ||
+    !kekeTime || !Number.isInteger(Number(kekeTime)) ||
     !description ||
     !networkQuality ||
     !ownerName ||
@@ -807,8 +808,8 @@ export async function pay_for_room_listing(
     !dateOfBirth ||
     !additionalInfo ||
     !imagesUrlArrayString ||
-    !numberOfBedrooms ||
-    !numberOfBathrooms ||
+    !numberOfBedrooms || !Number.isInteger(Number(numberOfBedrooms)) ||
+    !numberOfBathrooms || !Number.isInteger(Number(numberOfBathrooms)) ||
     !requestedPlan ||
     imagesUrlArrayString.split(",").length <= 1
   ) {

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { IsProductAllowed, shuffleArray } from "../utils/utils";
+import { hasDuplicates, IsProductAllowed, shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -41,10 +41,10 @@ export async function list_item(req: Request, res: Response): Promise<any> {
     imagesUrlArrayString.split(",").length <= 1 ||
     !title ||
     !description ||
-    !price ||
+    !price || !Number.isInteger(Number(price)) ||
     !condition ||
     !category ||
-    !schoolArray ||
+    !schoolArray || hasDuplicates(schoolArray) ||
     !numberInStock
   ) {
     return res.status(400).json("Invalid Input.");
