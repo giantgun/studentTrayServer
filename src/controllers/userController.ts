@@ -69,7 +69,7 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
         phoneNumber: phoneNumber.toString(),
         updatedAt: currentDate,
         emailVtoken: token,
-        verified: true
+        verified: true,
       },
       select: {
         userId: true,

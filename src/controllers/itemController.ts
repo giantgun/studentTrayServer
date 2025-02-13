@@ -41,10 +41,12 @@ export async function list_item(req: Request, res: Response): Promise<any> {
     imagesUrlArrayString.split(",").length <= 1 ||
     !title ||
     !description ||
-    !price || !Number.isInteger(Number(price)) ||
+    !price ||
+    !Number.isInteger(Number(price)) ||
     !condition ||
     !category ||
-    !schoolArray || hasDuplicates(schoolArray) ||
+    !schoolArray ||
+    hasDuplicates(schoolArray) ||
     !numberInStock
   ) {
     return res.status(400).json("Invalid Input.");
@@ -277,9 +279,11 @@ export async function edit_item(req: Request, res: Response): Promise<any> {
     !title ||
     !description ||
     !price ||
+    !Number.isInteger(Number(price)) ||
     !condition ||
     !category ||
-    !schoolArray ||
+    schoolArray.length < 1 ||
+    hasDuplicates(schoolArray) ||
     !numberInStock
   ) {
     return res.status(400).json("Invalid Input.");

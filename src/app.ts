@@ -17,8 +17,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const siteUrl =
-  `https://${process.env.SITE_URL}` || "https://studenttray.com";
+const siteUrl = `https://${process.env.SITE_URL}` || "https://studenttray.com";
 
 //middleware
 app.use(logger("dev"));

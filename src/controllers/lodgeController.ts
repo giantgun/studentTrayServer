@@ -306,15 +306,24 @@ export async function edit_lodge(req: Request, res: Response): Promise<any> {
     !propertyType ||
     !paymentFrequency ||
     !numberOfLodges ||
+    !Number.isInteger(Number(numberOfLodges)) ||
     !price ||
+    !Number.isInteger(Number(price)) ||
     !priceType ||
     !location ||
     !nearestSchool ||
     !walkingTime ||
+    !Number.isInteger(Number(walkingTime)) ||
     !kekeTime ||
+    !Number.isInteger(Number(kekeTime)) ||
     !agentFee ||
+    !Number.isInteger(Number(agentFee)) ||
     !description ||
-    !networkQuality
+    !networkQuality ||
+    !numberOfBedrooms ||
+    !Number.isInteger(Number(numberOfBedrooms)) ||
+    !numberOfBathrooms ||
+    !Number.isInteger(Number(numberOfBathrooms))
   ) {
     return res.status(400).json("Invalid input.");
   }

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import { IsProductAllowed, shuffleArray } from "../utils/utils";
+import { hasDuplicates, IsProductAllowed, shuffleArray } from "../utils/utils";
 
 const prisma = new PrismaClient();
 
@@ -271,11 +271,13 @@ export async function edit_service(req: Request, res: Response): Promise<any> {
 
   if (
     schoolArray.length < 1 ||
+    hasDuplicates(schoolArray) ||
     !title ||
     !priceType ||
     !description ||
     !price ||
     price <= 0 ||
+    !Number.isInteger(Number(price)) ||
     !category ||
     (!online && !inPerson) ||
     !availability

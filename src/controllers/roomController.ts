@@ -295,7 +295,6 @@ export async function delete_room(req: Request, res: Response): Promise<any> {
 
 export async function edit_room(req: Request, res: Response): Promise<any> {
   const {
-    imagesUrlArrayString,
     propertyType,
     numberOfBedrooms,
     numberOfBathrooms,
@@ -327,11 +326,14 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
     !propertyType ||
     !paymentFrequency ||
     !price ||
+    !Number.isInteger(Number(price)) ||
     !priceType ||
     !location ||
     !school ||
     !walkingTime ||
+    !Number.isInteger(Number(walkingTime)) ||
     !kekeTime ||
+    !Number.isInteger(Number(kekeTime)) ||
     !description ||
     !networkQuality ||
     !ownerName ||
@@ -339,7 +341,11 @@ export async function edit_room(req: Request, res: Response): Promise<any> {
     !ownerProgramme ||
     !yearOfStudy ||
     !dateOfBirth ||
-    !additionalInfo
+    !additionalInfo ||
+    !numberOfBedrooms ||
+    !Number.isInteger(Number(numberOfBedrooms)) ||
+    !numberOfBathrooms ||
+    !Number.isInteger(Number(numberOfBathrooms))
   ) {
     return res.status(400).json("Invalid input.");
   }
