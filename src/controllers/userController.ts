@@ -339,9 +339,9 @@ export async function signIn_user(req: Request, res: Response): Promise<any> {
       return res.status(400).json("Invalid input.");
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
-        username: username,
+        OR: [{ username: username }, { email: username }],
       },
       include: {
         school: true,
