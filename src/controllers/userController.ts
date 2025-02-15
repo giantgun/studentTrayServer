@@ -8,6 +8,7 @@ import {
   sendAnEmail,
   sendAnEmailAsText,
   verifyEmailMessage,
+  welcomeEmailMessage,
 } from "../utils/utils";
 
 const prisma = new PrismaClient();
@@ -76,7 +77,8 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
       },
     });
 
-    return res.status(200).json("Sign up successfull.");
+    res.status(200).json("Sign up successfull.");
+    await sendAnEmail(email, "Welcome to StudentTray", welcomeEmailMessage(),res)
   } catch (error) {
     console.error(error);
     res.status(400).json("an error occurred");
@@ -429,18 +431,27 @@ export async function signOut_user(req: Request, res: Response): Promise<any> {
 }
 
 export async function edit_profile(req: Request, res: Response): Promise<any> {
-  const { username, email, phoneNumber, school } = req.body;
+  const { username, phoneNumber, school } = req.body;
 
   const user = req.user;
-  if (!username || !email || !phoneNumber || !school) {
+  if (!username || !phoneNumber || !school) {
     return res.status(400).json("Invalid Input.");
+  }
+
+  const otherUserUsername = await prisma.user.findUnique({
+    where: {
+      username: username
+    }
+  })
+
+  if(otherUserUsername?.userId !== user.userId){
+    return res.status(400).json("Username already in use.")
   }
 
   const editedUser = await prisma.user.update({
     where: { userId: user.userId },
     data: {
       username: username,
-      email,
       phoneNumber,
       school: {
         connect: {
