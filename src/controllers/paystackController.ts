@@ -6,6 +6,8 @@ import { hasDuplicates } from "../utils/utils";
 
 dotenv.config;
 const prisma = new PrismaClient();
+const ambassadorEmails = process.env.AMBASSADOR_EMAILS?.split(",") || []
+const maxAmbassadorListings = Number(process.env.AMBASSADOR_LISTING) || 0
 
 export async function pay_for_item_listing(
   req: Request,
@@ -14,6 +16,11 @@ export async function pay_for_item_listing(
 ): Promise<any> {
   const user = req.user;
   const email = user.email;
+  const ambassador = ambassadorEmails?.filter((ambassadorEmail)=>{
+    if(ambassadorEmail == user.email){
+      return user.email
+    }
+  })
   const {
     imagesUrlArrayString,
     title,
@@ -58,7 +65,199 @@ export async function pay_for_item_listing(
     }
     req.productTier = "free";
     next();
-  } else if (requestedPlan === "paid") {
+  }else if (requestedPlan === "paid" && ambassador[0]) {
+    const paidListings = user.item.filter((listing: any) =>{
+      if(listing.tier === "paid"){
+        return listing
+      }
+    }) || []
+    if (maxAmbassadorListings >  paidListings?.length) {
+      req.plan = {
+        planName: user.email,
+        planCode: user.email,
+        maxNumberOfSchools: schoolArray.length,
+        maxNumberOfProducts: 1,
+      };
+      req.productTier = "paid";
+      next();
+    } else {
+        if (user.paystackCustomerCode) {
+          const paystackCustomerCode = user.paystackCustomerCode;
+          const stringifiedUser = JSON.stringify(user);
+          const createParams = JSON.stringify({
+            name: `list 1 item in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
+            interval: process.env.SUBSCRIPTION_DURATION,
+            amount: `${priceOfProduct}`,
+          });
+  
+          const createOptions = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/plan",
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+              "Content-Type": "application/json",
+            },
+          };
+  
+          const createReq = https
+            .request(createOptions, (createRes) => {
+              let createdata = "";
+  
+              createRes.on("data", (chunk) => {
+                createdata += chunk;
+              });
+  
+              createRes.on("end", () => {
+                const createData = JSON.parse(createdata);
+                const stringifiedItemData = JSON.stringify(req.body);
+                const params = JSON.stringify({
+                  email: email,
+                  amount: `${priceOfProduct}`,
+                  plan: `${createData.data.plan_code}`,
+                  customer: paystackCustomerCode,
+                  metadata: {
+                    item_data: stringifiedItemData,
+                    user: stringifiedUser,
+                    cancel_action: "http://localhost:5173",
+                  },
+                });
+  
+                const options = {
+                  hostname: "api.paystack.co",
+                  port: 443,
+                  path: "/transaction/initialize",
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                    "Content-Type": "application/json",
+                  },
+                };
+  
+                const httpReq = https
+                  .request(options, (httpRes) => {
+                    let data = "";
+  
+                    httpRes.on("data", (chunk) => {
+                      data += chunk;
+                    });
+  
+                    httpRes.on("end", async () => {
+                      const newdata = JSON.parse(data);
+                      const access_code = newdata.data.access_code;
+                      res.json({ access_code: access_code });
+                      await prisma.imagesfordelete.create({
+                        data: {
+                          referenceText: newdata.data.reference,
+                          imagesUrlArrayString: imagesUrlArrayString,
+                        },
+                      });
+                    });
+                  })
+                  .on("error", (error) => {
+                    console.error(error);
+                  });
+  
+                httpReq.write(params);
+                httpReq.end();
+              });
+            })
+            .on("error", (error) => {
+              console.error(error);
+            });
+  
+          createReq.write(createParams);
+          createReq.end();
+        } else {
+          const stringifiedUser = JSON.stringify(user);
+          const createParams = JSON.stringify({
+            name: `list 1 item in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
+            interval: process.env.SUBSCRIPTION_DURATION,
+            amount: `${priceOfProduct}`,
+          });
+  
+          const createOptions = {
+            hostname: "api.paystack.co",
+            port: 443,
+            path: "/plan",
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+              "Content-Type": "application/json",
+            },
+          };
+  
+          const createReq = https
+            .request(createOptions, (createRes) => {
+              let createdata = "";
+  
+              createRes.on("data", (chunk) => {
+                createdata += chunk;
+              });
+  
+              createRes.on("end", () => {
+                const createData = JSON.parse(createdata);
+                const stringifiedItemData = JSON.stringify(req.body);
+                const params = JSON.stringify({
+                  email: email,
+                  amount: `${priceOfProduct}`,
+                  plan: `${createData.data.plan_code}`,
+                  metadata: {
+                    item_data: stringifiedItemData,
+                    user: stringifiedUser,
+                    cancel_action: "http://localhost:5173",
+                  },
+                });
+  
+                const options = {
+                  hostname: "api.paystack.co",
+                  port: 443,
+                  path: "/transaction/initialize",
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                    "Content-Type": "application/json",
+                  },
+                };
+  
+                const httpReq = https
+                  .request(options, (httpRes) => {
+                    let data = "";
+  
+                    httpRes.on("data", (chunk) => {
+                      data += chunk;
+                    });
+  
+                    httpRes.on("end", async () => {
+                      const newdata = JSON.parse(data);
+                      const access_code = newdata.data.access_code;
+                      res.json({ access_code: access_code });
+                      await prisma.imagesfordelete.create({
+                        data: {
+                          referenceText: newdata.data.reference,
+                          imagesUrlArrayString: imagesUrlArrayString,
+                        },
+                      });
+                    });
+                  })
+                  .on("error", (error) => {
+                    console.error(error);
+                  });
+  
+                httpReq.write(params);
+                httpReq.end();
+              });
+            })
+            .on("error", (error) => {
+              console.error(error);
+            });
+  
+          createReq.write(createParams);
+          createReq.end();
+        }
+    }
+  }else if (requestedPlan === "paid") {
     const unUsedPlan = getUnusedPlan(
       user.item,
       `${user.itemsSubPlans}`,
@@ -255,6 +454,11 @@ export async function pay_for_service_listing(
 ): Promise<any> {
   const user = req.user;
   const email = user.email;
+  const ambassador = ambassadorEmails?.filter((ambassadorEmail)=>{
+    if(ambassadorEmail == user.email){
+      return user.email
+    }
+  })
   const {
     title,
     description,
@@ -304,7 +508,199 @@ export async function pay_for_service_listing(
     }
     req.productTier = "free";
     next();
-  } else if (requestedPlan === "paid") {
+  }else if (requestedPlan === "paid" && ambassador[0]) {
+    const paidListings = user.item.filter((listing: any) =>{
+      if(listing.tier === "paid"){
+        return listing
+      }
+    }) || []
+    if (maxAmbassadorListings >  paidListings?.length) {
+      req.plan = {
+        planName: user.email,
+        planCode: user.email,
+        maxNumberOfSchools: schoolArray.length,
+        maxNumberOfProducts: 1,
+      };
+      req.productTier = "paid";
+      next();
+    } else {
+      if (user.paystackCustomerCode) {
+        const paystackCustomerCode = user.paystackCustomerCode;
+        const stringifiedUser = JSON.stringify(user);
+        const createParams = JSON.stringify({
+          name: `list 1 service in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
+          interval: process.env.SUBSCRIPTION_DURATION,
+          amount: `${priceOfProduct}`,
+        });
+
+        const createOptions = {
+          hostname: "api.paystack.co",
+          port: 443,
+          path: "/plan",
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        };
+
+        const createReq = https
+          .request(createOptions, (createRes) => {
+            let createdata = "";
+
+            createRes.on("data", (chunk) => {
+              createdata += chunk;
+            });
+
+            createRes.on("end", () => {
+              const createData = JSON.parse(createdata);
+              const stringifiedServiceData = JSON.stringify(req.body);
+              const params = JSON.stringify({
+                email: email,
+                amount: `${priceOfProduct}`,
+                plan: `${createData.data.plan_code}`,
+                customer: paystackCustomerCode,
+                metadata: {
+                  service_data: stringifiedServiceData,
+                  user: stringifiedUser,
+                  cancel_action: "http://localhost:5173",
+                },
+              });
+
+              const options = {
+                hostname: "api.paystack.co",
+                port: 443,
+                path: "/transaction/initialize",
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                  "Content-Type": "application/json",
+                },
+              };
+
+              const httpReq = https
+                .request(options, (httpRes) => {
+                  let data = "";
+
+                  httpRes.on("data", (chunk) => {
+                    data += chunk;
+                  });
+
+                  httpRes.on("end", async () => {
+                    const newdata = JSON.parse(data);
+                    const access_code = newdata.data.access_code;
+                    res.json({ access_code: access_code });
+                    await prisma.imagesfordelete.create({
+                      data: {
+                        referenceText: newdata.data.reference,
+                        imagesUrlArrayString: imagesUrlArrayString,
+                      },
+                    });
+                  });
+                })
+                .on("error", (error) => {
+                  console.error(error);
+                });
+
+              httpReq.write(params);
+              httpReq.end();
+            });
+          })
+          .on("error", (error) => {
+            console.error(error);
+          });
+
+        createReq.write(createParams);
+        createReq.end();
+      } else {
+        const stringifiedUser = JSON.stringify(user);
+        const createParams = JSON.stringify({
+          name: `list 1 service in ${schoolArray.length} school${schoolArray.length > 1 ? "s" : ""}`,
+          interval: process.env.SUBSCRIPTION_DURATION,
+          amount: `${priceOfProduct}`,
+        });
+
+        const createOptions = {
+          hostname: "api.paystack.co",
+          port: 443,
+          path: "/plan",
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        };
+
+        const createReq = https
+          .request(createOptions, (createRes) => {
+            let createdata = "";
+
+            createRes.on("data", (chunk) => {
+              createdata += chunk;
+            });
+
+            createRes.on("end", () => {
+              const createData = JSON.parse(createdata);
+              const stringifiedServiceData = JSON.stringify(req.body);
+              const params = JSON.stringify({
+                email: email,
+                amount: `${priceOfProduct}`,
+                plan: `${createData.data.plan_code}`,
+                metadata: {
+                  service_data: stringifiedServiceData,
+                  user: stringifiedUser,
+                  cancel_action: "http://localhost:5173",
+                },
+              });
+
+              const options = {
+                hostname: "api.paystack.co",
+                port: 443,
+                path: "/transaction/initialize",
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                  "Content-Type": "application/json",
+                },
+              };
+
+              const httpReq = https
+                .request(options, (httpRes) => {
+                  let data = "";
+
+                  httpRes.on("data", (chunk) => {
+                    data += chunk;
+                  });
+
+                  httpRes.on("end", async () => {
+                    const newdata = JSON.parse(data);
+                    const access_code = newdata.data.access_code;
+                    res.json({ access_code: access_code });
+                    await prisma.imagesfordelete.create({
+                      data: {
+                        referenceText: newdata.data.reference,
+                        imagesUrlArrayString: imagesUrlArrayString,
+                      },
+                    });
+                  });
+                })
+                .on("error", (error) => {
+                  console.error(error);
+                });
+
+              httpReq.write(params);
+              httpReq.end();
+            });
+          })
+          .on("error", (error) => {
+            console.error(error);
+          });
+
+        createReq.write(createParams);
+        createReq.end();
+      }
+    }
+  }else if (requestedPlan === "paid") {
     const unUsedPlan = getUnusedPlan(
       user.service,
       `${user.servicesSubPlans}`,
@@ -501,6 +897,11 @@ export async function pay_for_lodge_listing(
 ): Promise<any> {
   const user = req.user;
   const email = user.email;
+  const ambassador = ambassadorEmails?.filter((ambassadorEmail)=>{
+    if(ambassadorEmail == user.email){
+      return user.email
+    }
+  })
   const {
     propertyType,
     numberOfBedrooms,
@@ -570,7 +971,199 @@ export async function pay_for_lodge_listing(
     }
     req.productTier = "free";
     next();
-  } else if (requestedPlan === "paid") {
+  }else if (requestedPlan === "paid" && ambassador[0]) {
+    const paidListings = user.lodge.filter((listing: any) =>{
+      if(listing.tier === "paid"){
+        return listing
+      }
+    }) || []
+    if (maxAmbassadorListings >  paidListings?.length) {
+      req.plan = {
+        planName: user.email,
+        planCode: user.email,
+        maxNumberOfSchools: 1,
+        maxNumberOfProducts: 1,
+      };
+      req.productTier = "paid";
+      next();
+    } else {
+      if (user.paystackCustomerCode) {
+        const paystackCustomerCode = user.paystackCustomerCode;
+        const stringifiedUser = JSON.stringify(user);
+        const createParams = JSON.stringify({
+          name: `list 1 lodge in 1`,
+          interval: process.env.SUBSCRIPTION_DURATION,
+          amount: `${priceOfProduct}`,
+        });
+
+        const createOptions = {
+          hostname: "api.paystack.co",
+          port: 443,
+          path: "/plan",
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        };
+
+        const createReq = https
+          .request(createOptions, (createRes) => {
+            let createdata = "";
+
+            createRes.on("data", (chunk) => {
+              createdata += chunk;
+            });
+
+            createRes.on("end", () => {
+              const createData = JSON.parse(createdata);
+              const stringifiedLodgeData = JSON.stringify(req.body);
+              const params = JSON.stringify({
+                email: email,
+                amount: `${priceOfProduct}`,
+                plan: `${createData.data.plan_code}`,
+                customer: paystackCustomerCode,
+                metadata: {
+                  lodge_data: stringifiedLodgeData,
+                  user: stringifiedUser,
+                  cancel_action: "http://localhost:5173",
+                },
+              });
+
+              const options = {
+                hostname: "api.paystack.co",
+                port: 443,
+                path: "/transaction/initialize",
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                  "Content-Type": "application/json",
+                },
+              };
+
+              const httpReq = https
+                .request(options, (httpRes) => {
+                  let data = "";
+
+                  httpRes.on("data", (chunk) => {
+                    data += chunk;
+                  });
+
+                  httpRes.on("end", async () => {
+                    const newdata = JSON.parse(data);
+                    const access_code = newdata.data.access_code;
+                    res.json({ access_code: access_code });
+                    await prisma.imagesfordelete.create({
+                      data: {
+                        referenceText: newdata.data.reference,
+                        imagesUrlArrayString: imagesUrlArrayString,
+                      },
+                    });
+                  });
+                })
+                .on("error", (error) => {
+                  console.error(error);
+                });
+
+              httpReq.write(params);
+              httpReq.end();
+            });
+          })
+          .on("error", (error) => {
+            console.error(error);
+          });
+
+        createReq.write(createParams);
+        createReq.end();
+      } else {
+        const stringifiedUser = JSON.stringify(user);
+        const createParams = JSON.stringify({
+          name: `list 1 lodge in 1`,
+          interval: process.env.SUBSCRIPTION_DURATION,
+          amount: `${priceOfProduct}`,
+        });
+
+        const createOptions = {
+          hostname: "api.paystack.co",
+          port: 443,
+          path: "/plan",
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        };
+
+        const createReq = https
+          .request(createOptions, (createRes) => {
+            let createdata = "";
+
+            createRes.on("data", (chunk) => {
+              createdata += chunk;
+            });
+
+            createRes.on("end", () => {
+              const createData = JSON.parse(createdata);
+              const stringifiedLodgeData = JSON.stringify(req.body);
+              const params = JSON.stringify({
+                email: email,
+                amount: `${priceOfProduct}`,
+                plan: `${createData.data.plan_code}`,
+                metadata: {
+                  lodge_data: stringifiedLodgeData,
+                  user: stringifiedUser,
+                  cancel_action: "http://localhost:5173",
+                },
+              });
+
+              const options = {
+                hostname: "api.paystack.co",
+                port: 443,
+                path: "/transaction/initialize",
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                  "Content-Type": "application/json",
+                },
+              };
+
+              const httpReq = https
+                .request(options, (httpRes) => {
+                  let data = "";
+
+                  httpRes.on("data", (chunk) => {
+                    data += chunk;
+                  });
+
+                  httpRes.on("end", async () => {
+                    const newdata = JSON.parse(data);
+                    const access_code = newdata.data.access_code;
+                    res.json({ access_code: access_code });
+                    await prisma.imagesfordelete.create({
+                      data: {
+                        referenceText: newdata.data.reference,
+                        imagesUrlArrayString: imagesUrlArrayString,
+                      },
+                    });
+                  });
+                })
+                .on("error", (error) => {
+                  console.error(error);
+                });
+
+              httpReq.write(params);
+              httpReq.end();
+            });
+          })
+          .on("error", (error) => {
+            console.error(error);
+          });
+
+        createReq.write(createParams);
+        createReq.end();
+      }
+    }
+  }else if (requestedPlan === "paid") {
     const unUsedPlan = getUnusedPlanForLdge(
       user.lodge,
       `${user.lodgesSubPlans}`,
@@ -766,6 +1359,11 @@ export async function pay_for_room_listing(
 ): Promise<any> {
   const user = req.user;
   const email = user.email;
+  const ambassador = ambassadorEmails?.filter((ambassadorEmail)=>{
+    if(ambassadorEmail == user.email){
+      return user.email
+    }
+  })
   const {
     imagesUrlArrayString,
     propertyType,
@@ -841,7 +1439,199 @@ export async function pay_for_room_listing(
     }
     req.productTier = "free";
     next();
-  } else if (requestedPlan === "paid") {
+  }else if (requestedPlan === "paid" && ambassador[0]) {
+    const paidListings = user.lodge.filter((listing: any) =>{
+      if(listing.tier === "paid"){
+        return listing
+      }
+    }) || []
+    if (maxAmbassadorListings >  paidListings?.length) {
+      req.plan = {
+        planName: user.email,
+        planCode: user.email,
+        maxNumberOfSchools: 1,
+        maxNumberOfProducts: 1,
+      };
+      req.productTier = "paid";
+      next();
+    } else {
+      if (user.paystackCustomerCode) {
+        const paystackCustomerCode = user.paystackCustomerCode;
+        const stringifiedUser = JSON.stringify(user);
+        const createParams = JSON.stringify({
+          name: `list 1 room in 1`,
+          interval: process.env.SUBSCRIPTION_DURATION,
+          amount: `${priceOfProduct}`,
+        });
+
+        const createOptions = {
+          hostname: "api.paystack.co",
+          port: 443,
+          path: "/plan",
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        };
+
+        const createReq = https
+          .request(createOptions, (createRes) => {
+            let createdata = "";
+
+            createRes.on("data", (chunk) => {
+              createdata += chunk;
+            });
+
+            createRes.on("end", () => {
+              const createData = JSON.parse(createdata);
+              const stringifiedRoomData = JSON.stringify(req.body);
+              const params = JSON.stringify({
+                email: email,
+                amount: `${priceOfProduct}`,
+                plan: `${createData.data.plan_code}`,
+                customer: paystackCustomerCode,
+                metadata: {
+                  room_data: stringifiedRoomData,
+                  user: stringifiedUser,
+                  cancel_action: "http://localhost:5173",
+                },
+              });
+
+              const options = {
+                hostname: "api.paystack.co",
+                port: 443,
+                path: "/transaction/initialize",
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                  "Content-Type": "application/json",
+                },
+              };
+
+              const httpReq = https
+                .request(options, (httpRes) => {
+                  let data = "";
+
+                  httpRes.on("data", (chunk) => {
+                    data += chunk;
+                  });
+
+                  httpRes.on("end", async () => {
+                    const newdata = JSON.parse(data);
+                    const access_code = newdata.data.access_code;
+                    res.json({ access_code: access_code });
+                    await prisma.imagesfordelete.create({
+                      data: {
+                        referenceText: newdata.data.reference,
+                        imagesUrlArrayString: imagesUrlArrayString,
+                      },
+                    });
+                  });
+                })
+                .on("error", (error) => {
+                  console.error(error);
+                });
+
+              httpReq.write(params);
+              httpReq.end();
+            });
+          })
+          .on("error", (error) => {
+            console.error(error);
+          });
+
+        createReq.write(createParams);
+        createReq.end();
+      } else {
+        const stringifiedUser = JSON.stringify(user);
+        const createParams = JSON.stringify({
+          name: `list 1 room in 1`,
+          interval: process.env.SUBSCRIPTION_DURATION,
+          amount: `${priceOfProduct}`,
+        });
+
+        const createOptions = {
+          hostname: "api.paystack.co",
+          port: 443,
+          path: "/plan",
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+            "Content-Type": "application/json",
+          },
+        };
+
+        const createReq = https
+          .request(createOptions, (createRes) => {
+            let createdata = "";
+
+            createRes.on("data", (chunk) => {
+              createdata += chunk;
+            });
+
+            createRes.on("end", () => {
+              const createData = JSON.parse(createdata);
+              const stringifiedRoomData = JSON.stringify(req.body);
+              const params = JSON.stringify({
+                email: email,
+                amount: `${priceOfProduct}`,
+                plan: `${createData.data.plan_code}`,
+                metadata: {
+                  room_data: stringifiedRoomData,
+                  user: stringifiedUser,
+                  cancel_action: "http://localhost:5173",
+                },
+              });
+
+              const options = {
+                hostname: "api.paystack.co",
+                port: 443,
+                path: "/transaction/initialize",
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${process.env.PAYSTACK_SECRET}`,
+                  "Content-Type": "application/json",
+                },
+              };
+
+              const httpReq = https
+                .request(options, (httpRes) => {
+                  let data = "";
+
+                  httpRes.on("data", (chunk) => {
+                    data += chunk;
+                  });
+
+                  httpRes.on("end", async () => {
+                    const newdata = JSON.parse(data);
+                    const access_code = newdata.data.access_code;
+                    res.json({ access_code: access_code });
+                    await prisma.imagesfordelete.create({
+                      data: {
+                        referenceText: newdata.data.reference,
+                        imagesUrlArrayString: imagesUrlArrayString,
+                      },
+                    });
+                  });
+                })
+                .on("error", (error) => {
+                  console.error(error);
+                });
+
+              httpReq.write(params);
+              httpReq.end();
+            });
+          })
+          .on("error", (error) => {
+            console.error(error);
+          });
+
+        createReq.write(createParams);
+        createReq.end();
+      }
+    }
+  }else if (requestedPlan === "paid") {
     const unUsedPlan = getUnusedPlanForLdge(
       user.room,
       `${user.lodgesSubPlans}`,
