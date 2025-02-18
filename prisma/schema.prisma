@@ -86,7 +86,7 @@ model lodge {
   electricity            Boolean  @default(false)
   water                  Boolean  @default(false)
   electricityDescription String?  @db.LongText
-  waterDescription       String?   @db.LongText
+  waterDescription       String?  @db.LongText
   networkQuality         String
   networkDescription     String?  @db.LongText
   videoUrl               String?  @db.Text
@@ -143,10 +143,10 @@ model room {
   parking                Boolean  @default(false)
   electricity            Boolean  @default(false)
   water                  Boolean  @default(false)
-  electricityDescription String?   @db.LongText
-  waterDescription       String?   @db.LongText
+  electricityDescription String?  @db.LongText
+  waterDescription       String?  @db.LongText
   networkQuality         String
-  networkDescription     String?   @db.LongText
+  networkDescription     String?  @db.LongText
   ownerName              String
   ownerPhone             String
   ownerProgramme         String
@@ -191,7 +191,7 @@ model service {
   category                  String
   online                    String           @default("")
   inPerson                  String           @default("")
-  jsonStingifiedAvailabilty String
+  jsonStingifiedAvailabilty String           @db.LongText
   priceType                 String
   videoUrl                  String?          @db.Text
   createdAt                 DateTime         @default(now())
