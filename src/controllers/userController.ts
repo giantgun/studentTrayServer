@@ -444,7 +444,7 @@ export async function edit_profile(req: Request, res: Response): Promise<any> {
     }
   })
 
-  if(otherUserUsername?.userId !== user.userId){
+  if(otherUserUsername !== null && otherUserUsername?.userId !== user.userId){
     return res.status(400).json("Username already in use.")
   }
 
