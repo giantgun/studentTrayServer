@@ -4,6 +4,6 @@ import asyncHandler from "express-async-handler";
 
 const router = express.Router();
 
-router.get("/", asyncHandler(index_get));
+router.get("/land", asyncHandler(index_get));
 
 export default router;
