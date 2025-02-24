@@ -10,6 +10,7 @@ import {
   save_business_photo_url,
 } from "../controllers/businessController";
 import { create_business_review } from "../controllers/reviewController";
+import { not_found } from "../controllers/indexController";
 
 const router = express.Router();
 
@@ -50,5 +51,9 @@ router.post(
   asyncHandler(authorization),
   asyncHandler(create_business_review),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;

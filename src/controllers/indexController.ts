@@ -9,23 +9,51 @@ export async function index_get(
   res: Response,
   next: NextFunction,
 ) {
-  let items = shuffleArray(await prisma.item.findMany({ take: 10, include: {item_school: {
-    include: {
-      school: true
-    }
-  }} })).slice(0, 2)
-  let services = shuffleArray(await prisma.service.findMany({ take: 10, include: {service_school: {
-    include: {
-      school: true
-    }
-  }} })).slice(0, 2)
-  let lodges = shuffleArray(await prisma.lodge.findMany({ take: 10 })).slice(0, 2)
-  let rooms = shuffleArray(await prisma.room.findMany({ take: 10 })).slice(0, 2)
+  let items = shuffleArray(
+    await prisma.item.findMany({
+      take: 10,
+      include: {
+        item_school: {
+          include: {
+            school: true,
+          },
+        },
+      },
+    }),
+  ).slice(0, 2);
+  let services = shuffleArray(
+    await prisma.service.findMany({
+      take: 10,
+      include: {
+        service_school: {
+          include: {
+            school: true,
+          },
+        },
+      },
+    }),
+  ).slice(0, 2);
+  let lodges = shuffleArray(await prisma.lodge.findMany({ take: 10 })).slice(
+    0,
+    2,
+  );
+  let rooms = shuffleArray(await prisma.room.findMany({ take: 10 })).slice(
+    0,
+    2,
+  );
 
   res.json({
     items,
     services,
     lodges,
-    rooms
+    rooms,
   });
+}
+
+export async function not_found(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  res.sendStatus(404);
 }

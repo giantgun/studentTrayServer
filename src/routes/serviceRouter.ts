@@ -13,6 +13,7 @@ import {
 } from "../controllers/serviceController";
 import { delete_files_conditionally } from "../controllers/cloudinaryController";
 import { pay_for_service_listing } from "../controllers/paystackController";
+import { not_found } from "../controllers/indexController";
 
 const router = express.Router();
 
@@ -56,5 +57,9 @@ router.post(
   asyncHandler(authorization),
   asyncHandler(save_service_image_url),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;

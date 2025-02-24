@@ -78,7 +78,12 @@ export async function signUp_user(req: Request, res: Response): Promise<any> {
     });
 
     res.status(200).json("Sign up successfull.");
-    await sendAnEmail(email, "Welcome to StudentTray", welcomeEmailMessage(),res)
+    await sendAnEmail(
+      email,
+      "Welcome to StudentTray",
+      welcomeEmailMessage(),
+      res,
+    );
   } catch (error) {
     console.error(error);
     res.status(400).json("an error occurred");
@@ -440,12 +445,12 @@ export async function edit_profile(req: Request, res: Response): Promise<any> {
 
   const otherUserUsername = await prisma.user.findUnique({
     where: {
-      username: username
-    }
-  })
+      username: username,
+    },
+  });
 
-  if(otherUserUsername !== null && otherUserUsername?.userId !== user.userId){
-    return res.status(400).json("Username already in use.")
+  if (otherUserUsername !== null && otherUserUsername?.userId !== user.userId) {
+    return res.status(400).json("Username already in use.");
   }
 
   const editedUser = await prisma.user.update({

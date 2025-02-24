@@ -11,6 +11,7 @@ import { list_service_from_webhook } from "../controllers/serviceController";
 import { list_lodge_from_webhook } from "../controllers/lodgeController";
 import { list_room_from_webhook } from "../controllers/roomController";
 import { save_user_new_subscription_plan } from "../controllers/userController";
+import { not_found } from "../controllers/indexController";
 
 const router = express.Router();
 
@@ -35,5 +36,9 @@ router.get(
   asyncHandler(delete_overdue_free_tier_products),
   asyncHandler(delete_files_conditionally),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;

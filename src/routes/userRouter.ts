@@ -17,7 +17,7 @@ import {
 } from "../controllers/userController";
 import asyncHandler from "express-async-handler";
 import dotenv from "dotenv";
-import { index_get } from "../controllers/indexController";
+import { index_get, not_found } from "../controllers/indexController";
 import { authorization } from "../utils/authorization";
 import { giveAuthorization } from "../utils/giveAuthorization";
 import { create_user_review } from "../controllers/reviewController";
@@ -96,5 +96,9 @@ router.get(
   asyncHandler(authorization),
   asyncHandler(update_user_card),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;

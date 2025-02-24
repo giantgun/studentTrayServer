@@ -28,6 +28,7 @@ import {
   create_room_images_folder,
   get_room_image_url_for_overwrite,
 } from "../controllers/roomController";
+import { not_found } from "../controllers/indexController";
 
 const router = express.Router();
 
@@ -110,5 +111,9 @@ router.get(
   asyncHandler(get_room_image_url_for_overwrite),
   asyncHandler(get_file_signature),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;

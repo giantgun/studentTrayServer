@@ -13,6 +13,7 @@ import {
 } from "../controllers/lodgeController";
 import { delete_files_conditionally } from "../controllers/cloudinaryController";
 import { pay_for_lodge_listing } from "../controllers/paystackController";
+import { not_found } from "../controllers/indexController";
 
 const router = express.Router();
 
@@ -52,5 +53,9 @@ router.post(
   asyncHandler(pay_for_lodge_listing),
   asyncHandler(list_lodge),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;

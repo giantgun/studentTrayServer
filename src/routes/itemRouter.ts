@@ -13,6 +13,7 @@ import {
 } from "../controllers/itemController";
 import { delete_files_conditionally } from "../controllers/cloudinaryController";
 import { pay_for_item_listing } from "../controllers/paystackController";
+import { not_found } from "../controllers/indexController";
 
 const router = express.Router();
 
@@ -52,5 +53,9 @@ router.post(
   asyncHandler(authorization),
   asyncHandler(save_item_image_url),
 );
+
+router.get(/\/*/, asyncHandler(not_found));
+
+router.post(/\/*/, asyncHandler(not_found));
 
 export default router;
