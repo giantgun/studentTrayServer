@@ -63,7 +63,7 @@ export async function list_room(req: Request, res: Response): Promise<any> {
     !dateOfBirth ||
     !additionalInfo ||
     !imagesUrlArrayString ||
-    imagesUrlArrayString.split(",").length <= 1
+    imagesUrlArrayString.split(",").length < 1
   ) {
     return res.status(400).json("Invalid input.");
   }

@@ -49,7 +49,7 @@ export async function list_service(req: Request, res: Response): Promise<any> {
     (!online && !inPerson) ||
     !availability ||
     !imagesUrlArrayString ||
-    imagesUrlArrayString.split(",").length <= 1
+    imagesUrlArrayString.split(",").length < 1
   ) {
     return res.status(400).json("Invalid input.");
   }

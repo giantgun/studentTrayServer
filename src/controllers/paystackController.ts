@@ -41,7 +41,7 @@ export async function pay_for_item_listing(
 
   if (
     !imagesUrlArrayString ||
-    imagesUrlArrayString.split(",").length <= 1 ||
+    imagesUrlArrayString.split(",").length < 1 ||
     !title ||
     !description ||
     !price ||
@@ -494,7 +494,7 @@ export async function pay_for_service_listing(
     (!online && !inPerson) ||
     !availability ||
     !imagesUrlArrayString ||
-    imagesUrlArrayString.split(",").length <= 1 ||
+    imagesUrlArrayString.split(",").length < 1 ||
     !requestedPlan
   ) {
     return res.status(400).json("Invalid input.");
@@ -958,7 +958,7 @@ export async function pay_for_lodge_listing(
     !Number.isInteger(Number(numberOfBedrooms)) ||
     !numberOfBathrooms ||
     !Number.isInteger(Number(numberOfBathrooms)) ||
-    imagesUrlArrayString.split(",").length <= 1 ||
+    imagesUrlArrayString.split(",").length < 1 ||
     !requestedPlan
   ) {
     return res.status(400).json("Invalid input.");
@@ -1428,7 +1428,7 @@ export async function pay_for_room_listing(
     !numberOfBathrooms ||
     !Number.isInteger(Number(numberOfBathrooms)) ||
     !requestedPlan ||
-    imagesUrlArrayString.split(",").length <= 1
+    imagesUrlArrayString.split(",").length < 1
   ) {
     return res.status(400).json("Invalid input.");
   }

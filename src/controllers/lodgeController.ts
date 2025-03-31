@@ -58,7 +58,7 @@ export async function list_lodge(req: Request, res: Response): Promise<any> {
     !description ||
     !networkQuality ||
     !imagesUrlArrayString ||
-    imagesUrlArrayString.split(",").length <= 1
+    imagesUrlArrayString.split(",").length < 1
   ) {
     return res.status(400).json("Invalid input.");
   }

@@ -38,7 +38,7 @@ export async function list_item(req: Request, res: Response): Promise<any> {
 
   if (
     !imagesUrlArrayString ||
-    imagesUrlArrayString.split(",").length <= 1 ||
+    imagesUrlArrayString.split(",").length < 1 ||
     !title ||
     !description ||
     !price ||
