@@ -11,7 +11,7 @@ export async function index_get(
 ) {
   let items = shuffleArray(
     await prisma.item.findMany({
-      take: 10,
+      take: 50,
       include: {
         item_school: {
           include: {
@@ -23,7 +23,7 @@ export async function index_get(
   ).slice(0, 2);
   let services = shuffleArray(
     await prisma.service.findMany({
-      take: 10,
+      take: 50,
       include: {
         service_school: {
           include: {
@@ -33,11 +33,11 @@ export async function index_get(
       },
     }),
   ).slice(0, 2);
-  let lodges = shuffleArray(await prisma.lodge.findMany({ take: 10 })).slice(
+  let lodges = shuffleArray(await prisma.lodge.findMany({ take: 50 })).slice(
     0,
     2,
   );
-  let rooms = shuffleArray(await prisma.room.findMany({ take: 10 })).slice(
+  let rooms = shuffleArray(await prisma.room.findMany({ take: 50 })).slice(
     0,
     2,
   );
